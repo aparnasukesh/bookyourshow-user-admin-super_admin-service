@@ -65,3 +65,27 @@ func (h *GrpcHandler) LoginUser(ctx context.Context, req *user_admin.LoginUserRe
 		Token:      token,
 	}, nil
 }
+
+func (h *GrpcHandler) GetUserProfile(ctx context.Context, req *user_admin.GetProfileRequest) (*user_admin.GetProfileResponse, error) {
+	profileDetails, err := h.svc.GetProfileDetails(ctx, int(req.UserId))
+	if err != nil {
+		return &user_admin.GetProfileResponse{
+			Status:         "Failed to retrieve user profile",
+			StatusCode:     404,
+			ProfileDetails: nil,
+		}, err
+	}
+	return &user_admin.GetProfileResponse{
+		Status:     "User profile retrieved successfully",
+		StatusCode: 200,
+		ProfileDetails: &user_admin.UpdateUserProfileRequest{
+			Username:    profileDetails.Username,
+			Phone:       profileDetails.PhoneNumber,
+			Email:       profileDetails.Email,
+			FirstName:   profileDetails.FirstName,
+			LastName:    profileDetails.LastName,
+			Gender:      profileDetails.Gender,
+			DateOfBirth: profileDetails.DateOfBirth,
+		},
+	}, nil
+}

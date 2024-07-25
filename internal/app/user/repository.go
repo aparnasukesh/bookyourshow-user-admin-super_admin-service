@@ -12,6 +12,8 @@ type repository struct {
 }
 
 type UserRepository interface {
+	InitializeRoleTable() error
+
 	CreateUser(ctx context.Context, user User) error
 	GetUserByEmail(ctx context.Context, email string) (*User, error)
 	GetUserByID(ctx context.Context, id int) (*User, error)
@@ -27,6 +29,37 @@ func NewRepository(db *gorm.DB) UserRepository {
 	return &repository{
 		db: db,
 	}
+}
+
+func (r *repository) InitializeRoleTable() error {
+	migrator := r.db.Migrator()
+
+	if !migrator.HasTable(&Role{}) {
+		if err := migrator.CreateTable(&Role{}); err != nil {
+			return err
+		}
+	}
+
+	roles := []Role{
+		{ID: 1, RoleName: "user"},
+		{ID: 2, RoleName: "admin"},
+		{ID: 3, RoleName: "super-admin"},
+	}
+
+	for _, role := range roles {
+		var existingRole Role
+		result := r.db.Where("id = ?", role.ID).First(&existingRole)
+		if result.Error != nil {
+			if result.Error == gorm.ErrRecordNotFound {
+				if err := r.db.Create(&role).Error; err != nil {
+					return err
+				}
+			} else {
+				return result.Error // Only return other errors
+			}
+		}
+	}
+	return nil
 }
 
 func (r *repository) CreateUser(ctx context.Context, user User) error {

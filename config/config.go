@@ -16,10 +16,11 @@ type Config struct {
 	GrpcPort             string `mapstructure:"GRPCPORT" validate:"required"`
 	GrpcNotificationPort string `mapstructure:"GrpcNotificationPort" validate:"required"`
 	GrpcAuthPort         string `mapstructure:"GrpcAuthPort" validate:"required"`
+	GrpcMovieBookingPort string `mapstructure:"GrpcMovieBookingPort" validate:"required"`
 }
 
 var envs = []string{
-	"DBHOST", "DBNAME", "DBUSER", "DBPORT", "DBPASSWORD", "GRPCPORT", "GrpcNotificationPort", "GrpcAuthPort",
+	"DBHOST", "DBNAME", "DBUSER", "DBPORT", "DBPASSWORD", "GRPCPORT", "GrpcNotificationPort", "GrpcAuthPort", "GrpcMovieBookingPort",
 }
 
 func LoadConfig() (Config, error) {

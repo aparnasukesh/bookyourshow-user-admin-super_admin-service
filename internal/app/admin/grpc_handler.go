@@ -19,7 +19,7 @@ func NewGrpcHandler(service Service) GrpcHandler {
 
 func (h *GrpcHandler) RegisterAdmin(ctx context.Context, req *user_admin.RegisterAdminRequest) (*user_admin.RegisterAdminResponse, error) {
 
-	userData := User{
+	userData := Admin{
 		Username:    req.Username,
 		Password:    req.Password,
 		PhoneNumber: req.Phone,
@@ -38,7 +38,7 @@ func (h *GrpcHandler) RegisterAdmin(ctx context.Context, req *user_admin.Registe
 }
 
 func (h *GrpcHandler) LoginAdmin(ctx context.Context, req *user_admin.LoginAdminRequest) (*user_admin.LoginAdminResponse, error) {
-	userData := User{
+	userData := Admin{
 		Email:    req.Email,
 		Password: req.Password,
 	}

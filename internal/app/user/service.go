@@ -20,6 +20,7 @@ type Service interface {
 	RegisterUser(ctx context.Context, user User) error
 	ValidateUser(ctx context.Context, user User) error
 	LoginUser(ctx context.Context, user User) (string, error)
+	GetProfileDetails(ctx context.Context, userId int) (*UserProfileDetails, error)
 }
 
 func NewService(repo UserRepository, notificationClient notificationClient.EmailServiceClient, authClient authClient.JWT_TokenServiceClient) Service {
@@ -110,4 +111,12 @@ func (s *service) LoginUser(ctx context.Context, user User) (string, error) {
 		return "", err
 	}
 	return response.Token, nil
+}
+
+func (s *service) GetProfileDetails(ctx context.Context, userId int) (*UserProfileDetails, error) {
+	profileDetails, err := s.repo.GetProfileDetails(ctx, userId)
+	if err != nil {
+		return nil, err
+	}
+	return profileDetails, nil
 }

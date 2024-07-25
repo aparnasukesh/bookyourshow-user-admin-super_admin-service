@@ -17,8 +17,8 @@ type service struct {
 }
 
 type Service interface {
-	RegisterAdmin(ctx context.Context, user User) error
-	LoginAdmin(ctx context.Context, user User) (string, error)
+	RegisterAdmin(ctx context.Context, admin Admin) error
+	LoginAdmin(ctx context.Context, admin Admin) (string, error)
 }
 
 func NewService(repo Repository, notificationClient notificationClient.EmailServiceClient, authClient authClient.JWT_TokenServiceClient) Service {
@@ -29,32 +29,27 @@ func NewService(repo Repository, notificationClient notificationClient.EmailServ
 	}
 }
 
-func (s *service) RegisterAdmin(ctx context.Context, user User) error {
-	existingUser, err := s.repo.GetAdminByEmail(ctx, user.Email)
+func (s *service) RegisterAdmin(ctx context.Context, admin Admin) error {
+	existingAdmin, err := s.repo.GetAdminByEmail(ctx, admin.Email)
 	if err != nil {
 		if !errors.Is(err, gorm.ErrRecordNotFound) {
 			return err
 		}
 	}
-
-	if existingUser != nil {
-		isVerified, err := s.repo.CheckIsVerified(ctx, existingUser.Email)
-		if err != nil {
-			return err
-		}
-		if !isVerified {
-			return errors.New("user not verified")
-		}
-
-		exists, err := s.repo.CheckAdminExist(ctx, existingUser.Email)
+	if existingAdmin != nil && err == nil {
+		return errors.New("email already exist")
+	}
+	hashPass := utils.HashPassword(admin.Password)
+	admin.Password = hashPass
+	if existingAdmin != nil {
+		exists, err := s.repo.CheckAdminExist(ctx, existingAdmin.Email)
 		if err != nil {
 			if !errors.Is(err, gorm.ErrRecordNotFound) {
 				return err
 			}
 		}
-
 		if exists {
-			status, err := s.repo.CheckAdminStatus(ctx, existingUser.Email)
+			status, err := s.repo.CheckAdminStatus(ctx, existingAdmin.Email)
 			if err != nil {
 				return err
 			}
@@ -68,25 +63,23 @@ func (s *service) RegisterAdmin(ctx context.Context, user User) error {
 				return errors.New("already rejected")
 			}
 		}
-
 		if !exists {
 			if err := s.repo.CreateAdminStatus(ctx, &AdminStatus{
 				Status: "pending",
-				Email:  existingUser.Email,
+				Email:  existingAdmin.Email,
 			}); err != nil {
 				return err
 			}
 		}
-
 		return nil
 	}
 
-	if err := s.repo.CreateAdmin(ctx, user); err != nil {
+	if err := s.repo.CreateAdmin(ctx, admin); err != nil {
 		return err
 	}
 	if err := s.repo.CreateAdminStatus(ctx, &AdminStatus{
 		Status: "pending",
-		Email:  user.Email,
+		Email:  admin.Email,
 	}); err != nil {
 		return err
 	}
@@ -94,8 +87,8 @@ func (s *service) RegisterAdmin(ctx context.Context, user User) error {
 	return nil
 }
 
-func (s *service) LoginAdmin(ctx context.Context, user User) (string, error) {
-	res, err := s.repo.GetAdminByEmail(ctx, user.Email)
+func (s *service) LoginAdmin(ctx context.Context, admin Admin) (string, error) {
+	res, err := s.repo.GetAdminByEmail(ctx, admin.Email)
 	if err != nil {
 		return "", nil
 	}
@@ -103,8 +96,8 @@ func (s *service) LoginAdmin(ctx context.Context, user User) (string, error) {
 	if !res.IsVerified {
 		return "", errors.New("")
 	}
-	isVerified := utils.VerifyPassword(user.Password, res.Password)
-	if user.Email != res.Email || !isVerified {
+	isVerified := utils.VerifyPassword(admin.Password, res.Password)
+	if admin.Email != res.Email || !isVerified {
 		return "", errors.New("incorrect password")
 
 	}

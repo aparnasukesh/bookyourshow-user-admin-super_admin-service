@@ -37,6 +37,14 @@ func NewSql(config config.Config) (*gorm.DB, error) {
 	dbInstance.AutoMigrate(&user.User{})
 	dbInstance.AutoMigrate(&user.Role{})
 	dbInstance.AutoMigrate(&user.UserRole{})
+	dbInstance.AutoMigrate(&admin.Admin{})
 	dbInstance.AutoMigrate(&admin.AdminStatus{})
+	dbInstance.AutoMigrate(&admin.AdminRole{})
+
+	userRepo := user.NewRepository(dbInstance)
+	if err := userRepo.InitializeRoleTable(); err != nil {
+		log.Fatal(err.Error())
+	}
+
 	return dbInstance, nil
 }

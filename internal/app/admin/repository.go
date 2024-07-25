@@ -12,8 +12,8 @@ type repository struct {
 }
 
 type Repository interface {
-	CreateAdmin(ctx context.Context, user User) error
-	GetAdminByEmail(ctx context.Context, email string) (*User, error)
+	CreateAdmin(ctx context.Context, user Admin) error
+	GetAdminByEmail(ctx context.Context, email string) (*Admin, error)
 	CheckIsVerified(ctx context.Context, email string) (bool, error)
 	CheckAdminExist(ctx context.Context, email string) (bool, error)
 	CheckAdminStatus(ctx context.Context, email string) (string, error)
@@ -27,8 +27,8 @@ func NewRepository(db *gorm.DB) Repository {
 	}
 }
 
-func (r *repository) GetAdminByEmail(ctx context.Context, email string) (*User, error) {
-	dbData := &User{}
+func (r *repository) GetAdminByEmail(ctx context.Context, email string) (*Admin, error) {
+	dbData := &Admin{}
 	result := r.db.Where("email = ?", email).First(&dbData)
 	if result.Error != nil {
 		return nil, result.Error
@@ -40,7 +40,7 @@ func (r *repository) GetAdminByEmail(ctx context.Context, email string) (*User, 
 }
 
 func (r *repository) CheckIsVerified(ctx context.Context, email string) (bool, error) {
-	dbData := &User{}
+	dbData := &Admin{}
 	result := r.db.Where("email = ? AND is_verified =?", email, true).First(&dbData)
 	if result.Error != nil {
 		return false, result.Error
@@ -80,15 +80,15 @@ func (r *repository) CreateAdminStatus(ctx context.Context, req *AdminStatus) er
 	return nil
 }
 
-func (r *repository) CreateAdmin(ctx context.Context, user User) error {
-	if err := r.db.Create(&user).Error; err != nil {
+func (r *repository) CreateAdmin(ctx context.Context, admin Admin) error {
+	if err := r.db.Create(&admin).Error; err != nil {
 		return err
 	}
 	return nil
 }
 
 func (r *repository) CheckAdminRole(ctx context.Context, userID uint) (bool, error) {
-	var userRole UserRole
+	var userRole AdminRole
 	if err := r.db.Where("user_id = ? AND role_id = ?", userID, ADMIN_ROLE).First(&userRole).Error; err != nil {
 		if err == gorm.ErrRecordNotFound {
 			return false, errors.New("no admin exist")
