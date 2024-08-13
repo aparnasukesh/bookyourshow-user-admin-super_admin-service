@@ -224,3 +224,162 @@ func (h *GrpcHandler) ListTheaterTypes(ctx context.Context, req *user_admin.List
 		TheaterTypes: grpcTheaterTypes,
 	}, nil
 }
+
+// screen -types
+func (h *GrpcHandler) AddScreenType(ctx context.Context, req *user_admin.AddScreenTypeRequest) (*user_admin.AddScreenTypeResponse, error) {
+	if err := h.svc.AddScreenType(ctx, ScreenType{
+		ScreenTypeName: req.ScreenTypeName,
+	}); err != nil {
+		return nil, err
+	}
+	return &user_admin.AddScreenTypeResponse{}, nil
+}
+
+func (h *GrpcHandler) DeleteScreenTypeByID(ctx context.Context, req *user_admin.DeleteScreenTypeRequest) (*user_admin.DeleteScreenTypeResponse, error) {
+	if err := h.svc.DeleteScreenTypeById(ctx, int(req.ScreenTypeId)); err != nil {
+		return nil, err
+	}
+	return &user_admin.DeleteScreenTypeResponse{}, nil
+}
+
+func (h *GrpcHandler) DeleteScreenTypeByName(ctx context.Context, req *user_admin.DeleteScreenTypeByNameRequest) (*user_admin.DeleteScreenTypeByNameResponse, error) {
+	if err := h.svc.DeleteScreenTypeByName(ctx, req.Name); err != nil {
+		return nil, err
+	}
+	return &user_admin.DeleteScreenTypeByNameResponse{}, nil
+}
+
+func (h *GrpcHandler) GetScreenTypeByID(ctx context.Context, req *user_admin.GetScreenTypeByIDRequest) (*user_admin.GetScreenTypeByIDResponse, error) {
+	screenType, err := h.svc.GetScreenTypeByID(ctx, int(req.ScreenTypeId))
+	if err != nil {
+		return nil, err
+	}
+	return &user_admin.GetScreenTypeByIDResponse{
+		ScreenType: &user_admin.ScreenType{
+			Id:             int32(screenType.ID),
+			ScreenTypeName: screenType.ScreenTypeName,
+		},
+	}, nil
+}
+
+func (h *GrpcHandler) GetScreenTypeByName(ctx context.Context, req *user_admin.GetScreenTypeByNameRequest) (*user_admin.GetScreenTypeByNameResponse, error) {
+	screenType, err := h.svc.GetScreenTypeByName(ctx, req.Name)
+	if err != nil {
+		return nil, err
+	}
+	return &user_admin.GetScreenTypeByNameResponse{
+		ScreenType: &user_admin.ScreenType{
+			Id:             int32(screenType.ID),
+			ScreenTypeName: screenType.ScreenTypeName,
+		},
+	}, nil
+}
+
+func (h *GrpcHandler) UpdateScreenType(ctx context.Context, req *user_admin.UpdateScreenTypeRequest) (*user_admin.UpdateScreenTypeResponse, error) {
+	err := h.svc.UpdateScreenType(ctx, int(req.Id), ScreenType{
+		ScreenTypeName: req.ScreenTypeName,
+	})
+	if err != nil {
+		return nil, err
+	}
+	return &user_admin.UpdateScreenTypeResponse{}, nil
+}
+
+// seat category
+func (h *GrpcHandler) AddSeatCategory(ctx context.Context, req *user_admin.AddSeatCategoryRequest) (*user_admin.AddSeatCategoryResponse, error) {
+	if err := h.svc.AddSeatCategory(ctx, SeatCategory{
+		SeatCategoryName:  req.SeatCategory.SeatCategoryName,
+		SeatCategoryPrice: req.SeatCategory.SeatCategoryPrice,
+	}); err != nil {
+		return &user_admin.AddSeatCategoryResponse{
+			Message: "failed to add seat category",
+		}, err
+	}
+	return &user_admin.AddSeatCategoryResponse{
+		Message: "successfully added seat category",
+	}, nil
+}
+
+func (h *GrpcHandler) DeleteSeatCategoryByID(ctx context.Context, req *user_admin.DeleteSeatCategoryRequest) (*user_admin.DeleteSeatCategoryResponse, error) {
+	if err := h.svc.DeleteSeatCategoryByID(ctx, int(req.SeatCategoryId)); err != nil {
+		return &user_admin.DeleteSeatCategoryResponse{
+			Message: "failed to delete seat category",
+		}, err
+	}
+	return &user_admin.DeleteSeatCategoryResponse{
+		Message: "successfully deleted seat category",
+	}, nil
+}
+
+func (h *GrpcHandler) DeleteSeatCategoryByName(ctx context.Context, req *user_admin.DeleteSeatCategoryByNameRequest) (*user_admin.DeleteSeatCategoryByNameResponse, error) {
+	if err := h.svc.DeleteSeatCategoryByName(ctx, req.Name); err != nil {
+		return &user_admin.DeleteSeatCategoryByNameResponse{
+			Message: "failed to delete seat category",
+		}, err
+	}
+	return &user_admin.DeleteSeatCategoryByNameResponse{
+		Message: "successfully deleted seat category",
+	}, nil
+}
+
+func (h *GrpcHandler) GetSeatCategoryByID(ctx context.Context, req *user_admin.GetSeatCategoryByIDRequest) (*user_admin.GetSeatCategoryByIDResponse, error) {
+	seatCategory, err := h.svc.GetSeatCategoryByID(ctx, int(req.SeatCategoryId))
+	if err != nil {
+		return nil, err
+	}
+	return &user_admin.GetSeatCategoryByIDResponse{
+		SeatCategory: &user_admin.SeatCategory{
+			Id:                int32(seatCategory.ID),
+			SeatCategoryName:  seatCategory.SeatCategoryName,
+			SeatCategoryPrice: seatCategory.SeatCategoryPrice,
+		},
+	}, nil
+}
+
+func (h *GrpcHandler) GetSeatCategoryByName(ctx context.Context, req *user_admin.GetSeatCategoryByNameRequest) (*user_admin.GetSeatCategoryByNameResponse, error) {
+	seatCategory, err := h.svc.GetSeatCategoryByName(ctx, req.Name)
+	if err != nil {
+		return nil, err
+	}
+	return &user_admin.GetSeatCategoryByNameResponse{
+		SeatCategory: &user_admin.SeatCategory{
+			Id:                int32(seatCategory.ID),
+			SeatCategoryName:  seatCategory.SeatCategoryName,
+			SeatCategoryPrice: seatCategory.SeatCategoryPrice,
+		},
+	}, nil
+}
+
+func (h *GrpcHandler) UpdateSeatCategory(ctx context.Context, req *user_admin.UpdateSeatCategoryRequest) (*user_admin.UpdateSeatCategoryResponse, error) {
+	err := h.svc.UpdateSeatCategory(ctx, int(req.Id), SeatCategory{
+		SeatCategoryName:  req.SeatCategory.SeatCategoryName,
+		SeatCategoryPrice: req.SeatCategory.SeatCategoryPrice,
+	})
+	if err != nil {
+		return nil, err
+	}
+	return &user_admin.UpdateSeatCategoryResponse{
+		Message: "successfully updated seat category",
+	}, nil
+}
+
+func (h *GrpcHandler) ListSeatCategories(ctx context.Context, req *user_admin.ListSeatCategoriesRequest) (*user_admin.ListSeatCategoriesResponse, error) {
+	response, err := h.svc.ListSeatCategories(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	var grpcSeatCategories []*user_admin.SeatCategory
+	for _, m := range response {
+		grpcSeatCategory := &user_admin.SeatCategory{
+			Id:                int32(m.ID),
+			SeatCategoryName:  m.SeatCategoryName,
+			SeatCategoryPrice: m.SeatCategoryPrice,
+		}
+		grpcSeatCategories = append(grpcSeatCategories, grpcSeatCategory)
+	}
+
+	return &user_admin.ListSeatCategoriesResponse{
+		SeatCategories: grpcSeatCategories,
+	}, nil
+}
