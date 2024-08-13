@@ -89,7 +89,7 @@ func (r *repository) CreateAdmin(ctx context.Context, admin Admin) error {
 
 func (r *repository) CheckAdminRole(ctx context.Context, userID uint) (bool, error) {
 	var userRole AdminRole
-	if err := r.db.Where("user_id = ? AND role_id = ?", userID, ADMIN_ROLE).First(&userRole).Error; err != nil {
+	if err := r.db.Where("admin_id = ? AND role_id = ?", userID, ADMIN_ROLE).First(&userRole).Error; err != nil {
 		if err == gorm.ErrRecordNotFound {
 			return false, errors.New("no admin exist")
 		}

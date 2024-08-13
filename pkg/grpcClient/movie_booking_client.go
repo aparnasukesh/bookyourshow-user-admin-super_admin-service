@@ -12,3 +12,11 @@ func NewMovieBookingGrpcClint(port string) (pb.MovieServiceClient, error) {
 	}
 	return pb.NewMovieServiceClient(conn), nil
 }
+
+func NewTheaterGrpcClient(port string) (pb.TheatreServiceClient, error) {
+	conn, err := grpc.Dial("localhost:"+port, grpc.WithInsecure())
+	if err != nil {
+		return nil, err
+	}
+	return pb.NewTheatreServiceClient(conn), nil
+}

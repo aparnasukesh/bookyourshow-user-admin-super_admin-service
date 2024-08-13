@@ -53,11 +53,16 @@ type AdminRequests struct {
 }
 
 type Movie struct {
-	Title       string  `gorm:"type:varchar(100);not null"`
-	Description string  `gorm:"type:text"`
-	Duration    int     `gorm:"not null"`
-	Genre       string  `gorm:"type:varchar(50)"`
-	ReleaseDate string  `gorm:"not null"`
-	Rating      float64 `gorm:"type:decimal(3,1)"`
-	Language    string  `gorm:"type:varchar(100);not null"`
+	Title       string  `json:"title" gorm:"type:varchar(100);not null"`
+	Description string  `json:"description" gorm:"type:text"`
+	Duration    int     `json:"duration" gorm:"not null"`
+	Genre       string  `json:"genre" gorm:"type:varchar(50)"`
+	ReleaseDate string  `json:"release_date" gorm:"not null"`
+	Rating      float64 `json:"rating" gorm:"type:decimal(3,1)"`
+	Language    string  `json:"language" gorm:"type:varchar(100);not null"`
+}
+
+type TheaterType struct {
+	ID              int    `json:"id"`
+	TheaterTypeName string `json:"theater_type_name"`
 }

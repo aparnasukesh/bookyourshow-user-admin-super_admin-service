@@ -33,6 +33,12 @@ func InitResources(cfg config.Config) (func() error, error) {
 	if err != nil {
 		return nil, err
 	}
+
+	theaterClient, err := grpcClient.NewTheaterGrpcClient(cfg.GrpcMovieBookingPort)
+	if err != nil {
+		return nil, err
+	}
+
 	// // Admin Module Initialization
 	adminRepo := admin.NewRepository(db)
 	adminService := admin.NewService(adminRepo, notificationClient, authClient)
@@ -45,7 +51,7 @@ func InitResources(cfg config.Config) (func() error, error) {
 
 	// SuperAdmin Module initialization
 	superAdminRepo := superadmin.NewRepository(db)
-	superAdminService := superadmin.NewService(superAdminRepo, notificationClient, authClient, movieBookingClient)
+	superAdminService := superadmin.NewService(superAdminRepo, notificationClient, authClient, movieBookingClient, theaterClient)
 	superAdminGrpcHandler := superadmin.NewGrpcHandler(superAdminService)
 
 	// Server initialization
