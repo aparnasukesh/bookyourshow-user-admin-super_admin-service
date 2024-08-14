@@ -285,6 +285,26 @@ func (h *GrpcHandler) UpdateScreenType(ctx context.Context, req *user_admin.Upda
 	return &user_admin.UpdateScreenTypeResponse{}, nil
 }
 
+func (h *GrpcHandler) ListScreenTypes(ctx context.Context, req *user_admin.ListScreenTypesRequest) (*user_admin.ListScreenTypesResponse, error) {
+	response, err := h.svc.ListScreenTypes(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	var grpcScreenTypes []*user_admin.ScreenType
+	for _, m := range response {
+		grpcScreenType := &user_admin.ScreenType{
+			Id:             int32(m.ID),
+			ScreenTypeName: m.ScreenTypeName,
+		}
+		grpcScreenTypes = append(grpcScreenTypes, grpcScreenType)
+	}
+
+	return &user_admin.ListScreenTypesResponse{
+		ScreenTypes: grpcScreenTypes,
+	}, nil
+}
+
 // seat category
 func (h *GrpcHandler) AddSeatCategory(ctx context.Context, req *user_admin.AddSeatCategoryRequest) (*user_admin.AddSeatCategoryResponse, error) {
 	if err := h.svc.AddSeatCategory(ctx, SeatCategory{

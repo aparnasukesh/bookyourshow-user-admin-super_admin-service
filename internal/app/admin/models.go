@@ -51,3 +51,37 @@ type SuperAdminProfileDetails struct {
 type AdminRequests struct {
 	Email string `json:"email" validate:"email,required"`
 }
+
+type Movie struct {
+	Title       string  `json:"title" gorm:"type:varchar(100);not null"`
+	Description string  `json:"description" gorm:"type:text"`
+	Duration    int     `json:"duration" gorm:"not null"`
+	Genre       string  `json:"genre" gorm:"type:varchar(50)"`
+	ReleaseDate string  `json:"release_date" gorm:"not null"`
+	Rating      float64 `json:"rating" gorm:"type:decimal(3,1)"`
+	Language    string  `json:"language" gorm:"type:varchar(100);not null"`
+}
+
+type TheaterType struct {
+	ID              int    `json:"id"`
+	TheaterTypeName string `json:"theater_type_name"`
+}
+
+type ScreenType struct {
+	ID             int    `json:"id"`
+	ScreenTypeName string `json:"theater_type_name"`
+}
+
+type SeatCategory struct {
+	ID                int     `json:"id"`
+	SeatCategoryName  string  `json:"seat_category_name"`
+	SeatCategoryPrice float64 `json:"seat_category_price"`
+}
+type Theater struct {
+	ID              uint   `json:"id"`
+	Name            string `json:"name"`
+	Location        string `json:"location"`
+	OwnerID         uint   `json:"owner_id"`
+	NumberOfScreens int    `json:"number_of_screens"`
+	TheaterTypeID   int    `json:"theater_type_id"`
+}

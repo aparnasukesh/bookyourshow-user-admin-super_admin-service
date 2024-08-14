@@ -41,7 +41,7 @@ func InitResources(cfg config.Config) (func() error, error) {
 
 	// // Admin Module Initialization
 	adminRepo := admin.NewRepository(db)
-	adminService := admin.NewService(adminRepo, notificationClient, authClient)
+	adminService := admin.NewService(adminRepo, notificationClient, authClient, movieBookingClient, theaterClient)
 	adminGrpcHandler := admin.NewGrpcHandler(adminService)
 
 	// User Module initialization
