@@ -102,6 +102,7 @@ func (h *GrpcHandler) GetMovieDetails(ctx context.Context, req *user_admin.GetMo
 			Genre:       movie.Genre,
 			ReleaseDate: movie.ReleaseDate,
 			Rating:      float32(movie.Rating),
+			Language:    movie.Language,
 		},
 	}, nil
 }
@@ -114,6 +115,7 @@ func (h *GrpcHandler) UpdateMovie(ctx context.Context, req *user_admin.UpdateMov
 		Genre:       req.Genre,
 		ReleaseDate: req.ReleaseDate,
 		Rating:      float64(req.Rating),
+		Language:    req.Language,
 	}, int(req.MovieId))
 	if err != nil {
 		return nil, err
@@ -136,6 +138,7 @@ func (h *GrpcHandler) ListMovies(ctx context.Context, req *user_admin.ListMovies
 			Genre:       m.Genre,
 			ReleaseDate: m.ReleaseDate,
 			Rating:      float32(m.Rating),
+			Language:    m.Language,
 		}
 		grpcMovies = append(grpcMovies, grpcMovie)
 	}

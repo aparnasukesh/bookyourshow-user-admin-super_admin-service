@@ -3,11 +3,13 @@ package admin
 import (
 	"context"
 	"errors"
+	"time"
 
 	authClient "github.com/aparnasukesh/inter-communication/auth"
 	"github.com/aparnasukesh/inter-communication/movie_booking"
 	notificationClient "github.com/aparnasukesh/inter-communication/notification"
 	"github.com/aparnasukesh/user-admin-super_admin-svc/internal/utils"
+	"google.golang.org/protobuf/types/known/timestamppb"
 	"gorm.io/gorm"
 )
 
@@ -23,7 +25,7 @@ type Service interface {
 	RegisterAdmin(ctx context.Context, admin Admin) error
 	LoginAdmin(ctx context.Context, admin Admin) (string, error)
 	//Theater
-	AddTheater(ctx context.Context, theater Theater) error
+	AddTheater(ctx context.Context, theater *Theater) error
 	DeleteTheaterByID(ctx context.Context, id int) error
 	DeleteTheaterByName(ctx context.Context, name string) error
 	GetTheaterByID(ctx context.Context, id int) (*Theater, error)
@@ -46,6 +48,14 @@ type Service interface {
 	GetTheaterScreenByNumber(ctx context.Context, theaterID int, screenNumber int) (*TheaterScreen, error)
 	UpdateTheaterScreen(ctx context.Context, id int, theaterScreen TheaterScreen) error
 	ListTheaterScreens(ctx context.Context, theaterId int) ([]TheaterScreen, error)
+	//Show time
+	AddShowtime(ctx context.Context, showtime Showtime) error
+	DeleteShowtimeByID(ctx context.Context, id int) error
+	DeleteShowtimeByDetails(ctx context.Context, movieID int, screenID int, showDate time.Time, showTime time.Time) error
+	GetShowtimeByID(ctx context.Context, id int) (*Showtime, error)
+	GetShowtimeByDetails(ctx context.Context, movieID int, screenID int, showDate time.Time, showTime time.Time) (*Showtime, error)
+	UpdateShowtime(ctx context.Context, id int, showtime Showtime) error
+	ListShowtimes(ctx context.Context, movieID int) ([]Showtime, error)
 }
 
 func NewService(repo Repository, notificationClient notificationClient.EmailServiceClient, authClient authClient.JWT_TokenServiceClient, movieBooking movie_booking.MovieServiceClient, theaterClient movie_booking.TheatreServiceClient) Service {
@@ -121,7 +131,7 @@ func (s *service) LoginAdmin(ctx context.Context, admin Admin) (string, error) {
 	}
 
 	if !res.IsVerified {
-		return "", errors.New("")
+		return "", errors.New("no admin exist")
 	}
 	isVerified := utils.VerifyPassword(admin.Password, res.Password)
 	if admin.Email != res.Email || !isVerified {
@@ -144,7 +154,7 @@ func (s *service) LoginAdmin(ctx context.Context, admin Admin) (string, error) {
 }
 
 // Theater
-func (s *service) AddTheater(ctx context.Context, theater Theater) error {
+func (s *service) AddTheater(ctx context.Context, theater *Theater) error {
 	_, err := s.theaterClient.AddTheater(ctx, &movie_booking.AddTheaterRequest{
 		Name:            theater.Name,
 		Location:        theater.Location,
@@ -435,4 +445,118 @@ func (s *service) UpdateTheaterScreen(ctx context.Context, id int, theaterScreen
 		return err
 	}
 	return nil
+}
+
+// Show time
+// Show Times
+func (s *service) AddShowtime(ctx context.Context, showtime Showtime) error {
+	_, err := s.theaterClient.AddShowtime(ctx, &movie_booking.AddShowtimeRequest{
+		Showtime: &movie_booking.Showtime{
+			Id:       uint32(showtime.ID),
+			MovieId:  int32(showtime.MovieID),
+			ScreenId: int32(showtime.ScreenID),
+			ShowDate: timestamppb.New(showtime.ShowDate),
+			ShowTime: timestamppb.New(showtime.ShowTime),
+		},
+	})
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (s *service) DeleteShowtimeByID(ctx context.Context, id int) error {
+	_, err := s.theaterClient.DeleteShowtimeByID(ctx, &movie_booking.DeleteShowtimeRequest{
+		ShowtimeId: int32(id),
+	})
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (s *service) DeleteShowtimeByDetails(ctx context.Context, movieID, screenID int, showDate, showTime time.Time) error {
+	_, err := s.theaterClient.DeleteShowtimeByDetails(ctx, &movie_booking.DeleteShowtimeByDetailsRequest{
+		MovieId:  int32(movieID),
+		ScreenId: int32(screenID),
+		ShowDate: timestamppb.New(showDate),
+		ShowTime: timestamppb.New(showTime),
+	})
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (s *service) GetShowtimeByID(ctx context.Context, id int) (*Showtime, error) {
+	response, err := s.theaterClient.GetShowtimeByID(ctx, &movie_booking.GetShowtimeByIDRequest{
+		ShowtimeId: int32(id),
+	})
+	if err != nil {
+		return nil, err
+	}
+	return &Showtime{
+		ID:       uint(response.Showtime.Id),
+		MovieID:  int(response.Showtime.MovieId),
+		ScreenID: int(response.Showtime.ScreenId),
+		ShowDate: response.Showtime.ShowDate.AsTime(),
+		ShowTime: response.Showtime.ShowTime.AsTime(),
+	}, nil
+}
+
+func (s *service) GetShowtimeByDetails(ctx context.Context, movieID, screenID int, showDate, showTime time.Time) (*Showtime, error) {
+	response, err := s.theaterClient.GetShowtimeByDetails(ctx, &movie_booking.GetShowtimeByDetailsRequest{
+		MovieId:  int32(movieID),
+		ScreenId: int32(screenID),
+		ShowDate: timestamppb.New(showDate),
+		ShowTime: timestamppb.New(showTime),
+	})
+	if err != nil {
+		return nil, err
+	}
+	return &Showtime{
+		ID:       uint(response.Showtime.Id),
+		MovieID:  int(response.Showtime.MovieId),
+		ScreenID: int(response.Showtime.ScreenId),
+		ShowDate: response.Showtime.ShowDate.AsTime(),
+		ShowTime: response.Showtime.ShowTime.AsTime(),
+	}, nil
+}
+
+func (s *service) UpdateShowtime(ctx context.Context, id int, showtime Showtime) error {
+	_, err := s.theaterClient.UpdateShowtime(ctx, &movie_booking.UpdateShowtimeRequest{
+		Showtime: &movie_booking.Showtime{
+			Id:       uint32(id),
+			MovieId:  int32(showtime.MovieID),
+			ScreenId: int32(showtime.ScreenID),
+			ShowDate: timestamppb.New(showtime.ShowDate),
+			ShowTime: timestamppb.New(showtime.ShowTime),
+		},
+	})
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (s *service) ListShowtimes(ctx context.Context, movieID int) ([]Showtime, error) {
+	response, err := s.theaterClient.ListShowtimes(ctx, &movie_booking.ListShowtimesRequest{
+		MovieId: int32(movieID),
+	})
+	if err != nil {
+		return nil, err
+	}
+	showtimes := []Showtime{}
+
+	for _, res := range response.Showtimes {
+		showtime := Showtime{
+			ID:       uint(res.Id),
+			MovieID:  int(res.MovieId),
+			ScreenID: int(res.ScreenId),
+			ShowDate: res.ShowDate.AsTime(),
+			ShowTime: res.ShowTime.AsTime(), // Convert string to time.Time if needed
+		}
+		showtimes = append(showtimes, showtime)
+	}
+	return showtimes, nil
 }

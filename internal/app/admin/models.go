@@ -1,6 +1,8 @@
 package admin
 
 import (
+	"time"
+
 	"gorm.io/gorm"
 )
 
@@ -92,4 +94,12 @@ type TheaterScreen struct {
 	ScreenNumber int  `json:"screen_number"`
 	SeatCapacity int  `json:"seat_capacity"`
 	ScreenTypeID int  `json:"screen_type_id"`
+}
+
+type Showtime struct {
+	ID       uint      `json:"id"`
+	MovieID  int       `json:"movie_id"`
+	ScreenID int       `json:"screen_id"`
+	ShowDate time.Time `json:"show_date"`
+	ShowTime time.Time `json:"show_time"`
 }

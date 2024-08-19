@@ -3,18 +3,20 @@ module github.com/aparnasukesh/user-admin-super_admin-svc
 go 1.21.1
 
 require (
-	github.com/aparnasukesh/inter-communication v1.2.5
+	github.com/aparnasukesh/inter-communication v1.2.6
 	github.com/go-playground/validator v9.31.0+incompatible
 	github.com/spf13/viper v1.19.0
 	google.golang.org/grpc v1.64.0
 	gorm.io/driver/postgres v1.5.9
 	gorm.io/gorm v1.25.10
+
 )
 
 require (
 	github.com/fsnotify/fsnotify v1.7.0 // indirect
 	github.com/go-playground/locales v0.14.1 // indirect
 	github.com/go-playground/universal-translator v0.18.1 // indirect
+	github.com/golang/protobuf v1.5.4 // indirect
 	github.com/hashicorp/hcl v1.0.0 // indirect
 	github.com/jackc/pgpassfile v1.0.0 // indirect
 	github.com/jackc/pgservicefile v0.0.0-20221227161230-091c0ba34f0a // indirect

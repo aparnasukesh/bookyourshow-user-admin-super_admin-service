@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/aparnasukesh/inter-communication/user_admin"
+	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
 type GrpcHandler struct {
@@ -55,7 +56,7 @@ func (h *GrpcHandler) LoginAdmin(ctx context.Context, req *user_admin.LoginAdmin
 
 // Theater
 func (h *GrpcHandler) AddTheater(ctx context.Context, req *user_admin.AddTheaterRequest) (*user_admin.AddTheaterResponse, error) {
-	if err := h.svc.AddTheater(ctx, Theater{
+	if err := h.svc.AddTheater(ctx, &Theater{
 		Name:            req.Name,
 		Location:        req.Location,
 		OwnerID:         uint(req.OwnerId),
@@ -334,5 +335,102 @@ func (h *GrpcHandler) ListTheaterScreens(ctx context.Context, req *user_admin.Li
 
 	return &user_admin.ListTheaterScreensResponse{
 		TheaterScreens: grpcTheaterScreens,
+	}, nil
+}
+
+// Show time
+func (h *GrpcHandler) AddShowtime(ctx context.Context, req *user_admin.AddShowtimeRequest) (*user_admin.AddShowtimeResponse, error) {
+	if err := h.svc.AddShowtime(ctx, Showtime{
+		ID:       uint(req.Showtime.Id),
+		MovieID:  int(req.Showtime.MovieId),
+		ScreenID: int(req.Showtime.ScreenId),
+		ShowDate: req.Showtime.ShowDate.AsTime(),
+		ShowTime: req.Showtime.ShowTime.AsTime(),
+	}); err != nil {
+		return &user_admin.AddShowtimeResponse{}, err
+	}
+	return &user_admin.AddShowtimeResponse{}, nil
+}
+
+func (h *GrpcHandler) DeleteShowtimeByID(ctx context.Context, req *user_admin.DeleteShowtimeRequest) (*user_admin.DeleteShowtimeResponse, error) {
+	if err := h.svc.DeleteShowtimeByID(ctx, int(req.ShowtimeId)); err != nil {
+		return &user_admin.DeleteShowtimeResponse{}, err
+	}
+	return &user_admin.DeleteShowtimeResponse{}, nil
+}
+
+func (h *GrpcHandler) DeleteShowtimeByDetails(ctx context.Context, req *user_admin.DeleteShowtimeByDetailsRequest) (*user_admin.DeleteShowtimeByDetailsResponse, error) {
+	if err := h.svc.DeleteShowtimeByDetails(ctx, int(req.MovieId), int(req.ScreenId), req.ShowDate.AsTime(), req.ShowTime.AsTime()); err != nil {
+		return &user_admin.DeleteShowtimeByDetailsResponse{}, err
+	}
+	return &user_admin.DeleteShowtimeByDetailsResponse{}, nil
+}
+
+func (h *GrpcHandler) GetShowtimeByID(ctx context.Context, req *user_admin.GetShowtimeByIDRequest) (*user_admin.GetShowtimeByIDResponse, error) {
+	showtime, err := h.svc.GetShowtimeByID(ctx, int(req.ShowtimeId))
+	if err != nil {
+		return nil, err
+	}
+	return &user_admin.GetShowtimeByIDResponse{
+		Showtime: &user_admin.Showtime{
+			Id:       uint32(showtime.ID),
+			MovieId:  int32(showtime.MovieID),
+			ScreenId: int32(showtime.ScreenID),
+			ShowDate: timestamppb.New(showtime.ShowDate),
+			ShowTime: timestamppb.New(showtime.ShowTime),
+		},
+	}, nil
+}
+
+func (h *GrpcHandler) GetShowtimeByDetails(ctx context.Context, req *user_admin.GetShowtimeByDetailsRequest) (*user_admin.GetShowtimeByDetailsResponse, error) {
+	showtime, err := h.svc.GetShowtimeByDetails(ctx, int(req.MovieId), int(req.ScreenId), req.ShowDate.AsTime(), req.ShowTime.AsTime())
+	if err != nil {
+		return nil, err
+	}
+	return &user_admin.GetShowtimeByDetailsResponse{
+		Showtime: &user_admin.Showtime{
+			Id:       uint32(showtime.ID),
+			MovieId:  int32(showtime.MovieID),
+			ScreenId: int32(showtime.ScreenID),
+			ShowDate: timestamppb.New(showtime.ShowDate),
+			ShowTime: timestamppb.New(showtime.ShowTime),
+		},
+	}, nil
+}
+
+func (h *GrpcHandler) UpdateShowtime(ctx context.Context, req *user_admin.UpdateShowtimeRequest) (*user_admin.UpdateShowtimeResponse, error) {
+	err := h.svc.UpdateShowtime(ctx, int(req.Showtime.Id), Showtime{
+		ID:       uint(req.Showtime.Id),
+		MovieID:  int(req.Showtime.MovieId),
+		ScreenID: int(req.Showtime.ScreenId),
+		ShowDate: req.Showtime.ShowDate.AsTime(),
+		ShowTime: req.Showtime.ShowTime.AsTime(),
+	})
+	if err != nil {
+		return nil, err
+	}
+	return &user_admin.UpdateShowtimeResponse{}, nil
+}
+
+func (h *GrpcHandler) ListShowtimes(ctx context.Context, req *user_admin.ListShowtimesRequest) (*user_admin.ListShowtimesResponse, error) {
+	response, err := h.svc.ListShowtimes(ctx, int(req.MovieId))
+	if err != nil {
+		return nil, err
+	}
+
+	var grpcShowtimes []*user_admin.Showtime
+	for _, m := range response {
+		grpcShowtime := &user_admin.Showtime{
+			Id:       uint32(m.ID),
+			MovieId:  int32(m.MovieID),
+			ScreenId: int32(m.ScreenID),
+			ShowDate: timestamppb.New(m.ShowDate),
+			ShowTime: timestamppb.New(m.ShowTime),
+		}
+		grpcShowtimes = append(grpcShowtimes, grpcShowtime)
+	}
+
+	return &user_admin.ListShowtimesResponse{
+		Showtimes: grpcShowtimes,
 	}, nil
 }

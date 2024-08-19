@@ -43,9 +43,6 @@ func (s *service) RegisterUser(ctx context.Context, user User) error {
 		return err
 	}
 	user.Otp = otp
-	if err := s.repo.CreateUser(ctx, user); err != nil {
-		return err
-	}
 	_, err = s.notificationClient.SendEmail(ctx, &notificationClient.EmailRequest{
 		Email:       user.Email,
 		Otp:         otp,
@@ -53,6 +50,9 @@ func (s *service) RegisterUser(ctx context.Context, user User) error {
 	})
 	if err != nil {
 		return fmt.Errorf("failed to send email")
+	}
+	if err := s.repo.CreateUser(ctx, user); err != nil {
+		return err
 	}
 	return nil
 
@@ -68,9 +68,9 @@ func (s *service) ValidateUser(ctx context.Context, user User) error {
 	if user.Email != res.Email || enterdOtp != res.Otp {
 		err = s.repo.DeleteUserByEmail(ctx, user)
 		if err != nil {
-			return err
+			return errors.New("email id not exist")
 		}
-		return errors.New("invalid otp")
+		return errors.New("invalid otp or ivalid email address")
 	}
 
 	if err := s.repo.UserApproval(ctx, user.Email); err != nil {
@@ -87,7 +87,7 @@ func (s *service) ValidateUser(ctx context.Context, user User) error {
 func (s *service) LoginUser(ctx context.Context, user User) (string, error) {
 	res, err := s.repo.GetUserByEmail(ctx, user.Email)
 	if err != nil {
-		return "", nil
+		return "", err
 	}
 
 	if !res.IsVerified {
