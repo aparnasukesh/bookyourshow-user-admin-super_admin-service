@@ -311,8 +311,7 @@ func (h *GrpcHandler) ListScreenTypes(ctx context.Context, req *user_admin.ListS
 // seat category
 func (h *GrpcHandler) AddSeatCategory(ctx context.Context, req *user_admin.AddSeatCategoryRequest) (*user_admin.AddSeatCategoryResponse, error) {
 	if err := h.svc.AddSeatCategory(ctx, SeatCategory{
-		SeatCategoryName:  req.SeatCategory.SeatCategoryName,
-		SeatCategoryPrice: req.SeatCategory.SeatCategoryPrice,
+		SeatCategoryName: req.SeatCategory.SeatCategoryName,
 	}); err != nil {
 		return &user_admin.AddSeatCategoryResponse{
 			Message: "failed to add seat category",
@@ -352,9 +351,8 @@ func (h *GrpcHandler) GetSeatCategoryByID(ctx context.Context, req *user_admin.G
 	}
 	return &user_admin.GetSeatCategoryByIDResponse{
 		SeatCategory: &user_admin.SeatCategory{
-			Id:                int32(seatCategory.ID),
-			SeatCategoryName:  seatCategory.SeatCategoryName,
-			SeatCategoryPrice: seatCategory.SeatCategoryPrice,
+			Id:               int32(seatCategory.ID),
+			SeatCategoryName: seatCategory.SeatCategoryName,
 		},
 	}, nil
 }
@@ -366,17 +364,15 @@ func (h *GrpcHandler) GetSeatCategoryByName(ctx context.Context, req *user_admin
 	}
 	return &user_admin.GetSeatCategoryByNameResponse{
 		SeatCategory: &user_admin.SeatCategory{
-			Id:                int32(seatCategory.ID),
-			SeatCategoryName:  seatCategory.SeatCategoryName,
-			SeatCategoryPrice: seatCategory.SeatCategoryPrice,
+			Id:               int32(seatCategory.ID),
+			SeatCategoryName: seatCategory.SeatCategoryName,
 		},
 	}, nil
 }
 
 func (h *GrpcHandler) UpdateSeatCategory(ctx context.Context, req *user_admin.UpdateSeatCategoryRequest) (*user_admin.UpdateSeatCategoryResponse, error) {
 	err := h.svc.UpdateSeatCategory(ctx, int(req.Id), SeatCategory{
-		SeatCategoryName:  req.SeatCategory.SeatCategoryName,
-		SeatCategoryPrice: req.SeatCategory.SeatCategoryPrice,
+		SeatCategoryName: req.SeatCategory.SeatCategoryName,
 	})
 	if err != nil {
 		return nil, err
@@ -395,9 +391,8 @@ func (h *GrpcHandler) ListSeatCategories(ctx context.Context, req *user_admin.Li
 	var grpcSeatCategories []*user_admin.SeatCategory
 	for _, m := range response {
 		grpcSeatCategory := &user_admin.SeatCategory{
-			Id:                int32(m.ID),
-			SeatCategoryName:  m.SeatCategoryName,
-			SeatCategoryPrice: m.SeatCategoryPrice,
+			Id:               int32(m.ID),
+			SeatCategoryName: m.SeatCategoryName,
 		}
 		grpcSeatCategories = append(grpcSeatCategories, grpcSeatCategory)
 	}

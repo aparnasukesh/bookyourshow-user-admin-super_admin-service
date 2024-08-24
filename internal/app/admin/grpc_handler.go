@@ -58,7 +58,10 @@ func (h *GrpcHandler) LoginAdmin(ctx context.Context, req *user_admin.LoginAdmin
 func (h *GrpcHandler) AddTheater(ctx context.Context, req *user_admin.AddTheaterRequest) (*user_admin.AddTheaterResponse, error) {
 	if err := h.svc.AddTheater(ctx, &Theater{
 		Name:            req.Name,
-		Location:        req.Location,
+		Place:           req.Place,
+		City:            req.City,
+		District:        req.District,
+		State:           req.State,
 		OwnerID:         uint(req.OwnerId),
 		NumberOfScreens: int(req.NumberOfScreens),
 		TheaterTypeID:   int(req.TheaterTypeId),
@@ -91,7 +94,10 @@ func (h *GrpcHandler) GetTheaterByID(ctx context.Context, req *user_admin.GetThe
 		Theater: &user_admin.Theater{
 			TheaterId:       int32(theater.ID),
 			Name:            theater.Name,
-			Location:        theater.Location,
+			Place:           theater.Place,
+			City:            theater.City,
+			District:        theater.District,
+			State:           theater.State,
 			OwnerId:         uint32(theater.OwnerID),
 			NumberOfScreens: int32(theater.NumberOfScreens),
 			TheaterTypeId:   int32(theater.TheaterTypeID),
@@ -104,22 +110,34 @@ func (h *GrpcHandler) GetTheaterByName(ctx context.Context, req *user_admin.GetT
 	if err != nil {
 		return nil, err
 	}
+	theaters := []*user_admin.Theater{}
+
+	for _, data := range theater {
+		theaterData := &user_admin.Theater{
+			TheaterId:       int32(data.ID),
+			Name:            data.Name,
+			Place:           data.Place,
+			City:            data.City,
+			District:        data.District,
+			State:           data.State,
+			OwnerId:         uint32(data.OwnerID),
+			NumberOfScreens: int32(data.NumberOfScreens),
+			TheaterTypeId:   int32(data.TheaterTypeID),
+		}
+		theaters = append(theaters, theaterData)
+	}
 	return &user_admin.GetTheaterByNameResponse{
-		Theater: &user_admin.Theater{
-			TheaterId:       int32(theater.ID),
-			Name:            theater.Name,
-			Location:        theater.Location,
-			OwnerId:         uint32(theater.OwnerID),
-			NumberOfScreens: int32(theater.NumberOfScreens),
-			TheaterTypeId:   int32(theater.TheaterTypeID),
-		},
-	}, nil
+		Theater: theaters,
+	}, err
 }
 
 func (h *GrpcHandler) UpdateTheater(ctx context.Context, req *user_admin.UpdateTheaterRequest) (*user_admin.UpdateTheaterResponse, error) {
 	err := h.svc.UpdateTheater(ctx, int(req.TheaterId), Theater{
 		Name:            req.Name,
-		Location:        req.Location,
+		Place:           req.Place,
+		City:            req.City,
+		District:        req.District,
+		State:           req.State,
 		OwnerID:         uint(req.OwnerId),
 		NumberOfScreens: int(req.NumberOfScreens),
 		TheaterTypeID:   int(req.TheaterTypeId),
@@ -141,7 +159,10 @@ func (h *GrpcHandler) ListTheaters(ctx context.Context, req *user_admin.ListThea
 		grpcTheater := &user_admin.Theater{
 			TheaterId:       int32(m.ID),
 			Name:            m.Name,
-			Location:        m.Location,
+			Place:           m.Place,
+			City:            m.City,
+			District:        m.District,
+			State:           m.State,
 			OwnerId:         uint32(m.OwnerID),
 			NumberOfScreens: int32(m.NumberOfScreens),
 			TheaterTypeId:   int32(m.TheaterTypeID),
@@ -210,9 +231,8 @@ func (h *GrpcHandler) ListSeatCategories(ctx context.Context, req *user_admin.Li
 	var grpcSeatCategories []*user_admin.SeatCategory
 	for _, m := range response {
 		grpcSeatCategory := &user_admin.SeatCategory{
-			Id:                int32(m.ID),
-			SeatCategoryName:  m.SeatCategoryName,
-			SeatCategoryPrice: m.SeatCategoryPrice,
+			Id:               int32(m.ID),
+			SeatCategoryName: m.SeatCategoryName,
 		}
 		grpcSeatCategories = append(grpcSeatCategories, grpcSeatCategory)
 	}

@@ -73,7 +73,6 @@ type ScreenType struct {
 }
 
 type SeatCategory struct {
-	ID                int     `json:"id"`
-	SeatCategoryName  string  `json:"seat_category_name"`
-	SeatCategoryPrice float64 `json:"seat_category_price"`
+	ID               int    `json:"id"`
+	SeatCategoryName string `json:"seat_category_name"`
 }

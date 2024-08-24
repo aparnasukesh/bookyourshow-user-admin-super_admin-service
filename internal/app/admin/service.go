@@ -29,7 +29,7 @@ type Service interface {
 	DeleteTheaterByID(ctx context.Context, id int) error
 	DeleteTheaterByName(ctx context.Context, name string) error
 	GetTheaterByID(ctx context.Context, id int) (*Theater, error)
-	GetTheaterByName(ctx context.Context, name string) (*Theater, error)
+	GetTheaterByName(ctx context.Context, name string) ([]Theater, error)
 	UpdateTheater(ctx context.Context, id int, theater Theater) error
 	ListTheaters(ctx context.Context) ([]Theater, error)
 	//Seat categories
@@ -63,6 +63,7 @@ func NewService(repo Repository, notificationClient notificationClient.EmailServ
 		repo:               repo,
 		notificationClient: notificationClient,
 		authClient:         authClient,
+		theaterClient:      theaterClient,
 	}
 }
 
@@ -157,7 +158,10 @@ func (s *service) LoginAdmin(ctx context.Context, admin Admin) (string, error) {
 func (s *service) AddTheater(ctx context.Context, theater *Theater) error {
 	_, err := s.theaterClient.AddTheater(ctx, &movie_booking.AddTheaterRequest{
 		Name:            theater.Name,
-		Location:        theater.Location,
+		Place:           theater.Place,
+		City:            theater.City,
+		District:        theater.District,
+		State:           theater.State,
 		OwnerId:         uint32(theater.OwnerID),
 		NumberOfScreens: int32(theater.NumberOfScreens),
 		TheaterTypeId:   int32(theater.TheaterTypeID),
@@ -196,30 +200,40 @@ func (s *service) GetTheaterByID(ctx context.Context, id int) (*Theater, error) 
 		return nil, err
 	}
 	return &Theater{
-		ID:              uint(response.Theater.TheaterId),
 		Name:            response.Theater.Name,
-		Location:        response.Theater.Location,
+		Place:           response.Theater.Place,
+		City:            response.Theater.City,
+		District:        response.Theater.District,
+		State:           response.Theater.State,
 		OwnerID:         uint(response.Theater.OwnerId),
 		NumberOfScreens: int(response.Theater.NumberOfScreens),
 		TheaterTypeID:   int(response.Theater.TheaterTypeId),
 	}, nil
 }
 
-func (s *service) GetTheaterByName(ctx context.Context, name string) (*Theater, error) {
+func (s *service) GetTheaterByName(ctx context.Context, name string) ([]Theater, error) {
 	response, err := s.theaterClient.GetTheaterByName(ctx, &movie_booking.GetTheaterByNameRequest{
 		Name: name,
 	})
 	if err != nil {
 		return nil, err
 	}
-	return &Theater{
-		ID:              uint(response.Theater.TheaterId),
-		Name:            response.Theater.Name,
-		Location:        response.Theater.Location,
-		OwnerID:         uint(response.Theater.OwnerId),
-		NumberOfScreens: int(response.Theater.NumberOfScreens),
-		TheaterTypeID:   int(response.Theater.TheaterTypeId),
-	}, nil
+	var theaterResponses []Theater
+	for _, theater := range response.Theater {
+		theaterResponse := Theater{
+			ID:              uint(theater.TheaterId),
+			Name:            theater.Name,
+			Place:           theater.Place,
+			City:            theater.City,
+			District:        theater.District,
+			State:           theater.State,
+			OwnerID:         uint(theater.OwnerId),
+			NumberOfScreens: int(theater.NumberOfScreens),
+			TheaterTypeID:   int(theater.TheaterTypeId),
+		}
+		theaterResponses = append(theaterResponses, theaterResponse)
+	}
+	return theaterResponses, nil
 }
 
 func (s *service) ListTheaters(ctx context.Context) ([]Theater, error) {
@@ -233,7 +247,10 @@ func (s *service) ListTheaters(ctx context.Context) ([]Theater, error) {
 		theater := Theater{
 			ID:              uint(res.TheaterId),
 			Name:            res.Name,
-			Location:        res.Location,
+			Place:           res.Place,
+			City:            res.City,
+			District:        res.District,
+			State:           res.State,
 			OwnerID:         uint(res.OwnerId),
 			NumberOfScreens: int(res.NumberOfScreens),
 			TheaterTypeID:   int(res.TheaterTypeId),
@@ -247,7 +264,10 @@ func (s *service) UpdateTheater(ctx context.Context, id int, theater Theater) er
 	_, err := s.theaterClient.UpdateTheater(ctx, &movie_booking.UpdateTheaterRequest{
 		TheaterId:       int32(id),
 		Name:            theater.Name,
-		Location:        theater.Location,
+		Place:           theater.Place,
+		City:            theater.City,
+		District:        theater.District,
+		State:           theater.State,
 		OwnerId:         uint32(theater.OwnerID),
 		NumberOfScreens: int32(theater.NumberOfScreens),
 		TheaterTypeId:   int32(theater.TheaterTypeID),
@@ -329,9 +349,8 @@ func (s *service) ListSeatCategories(ctx context.Context) ([]SeatCategory, error
 
 	for _, res := range response.SeatCategories {
 		seatCategory := SeatCategory{
-			ID:                int(res.Id),
-			SeatCategoryName:  res.SeatCategoryName,
-			SeatCategoryPrice: res.SeatCategoryPrice,
+			ID:               int(res.Id),
+			SeatCategoryName: res.SeatCategoryName,
 		}
 		seatCategories = append(seatCategories, seatCategory)
 	}

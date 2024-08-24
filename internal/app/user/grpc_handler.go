@@ -81,7 +81,6 @@ func (h *GrpcHandler) GetUserProfile(ctx context.Context, req *user_admin.GetPro
 		ProfileDetails: &user_admin.UpdateUserProfileRequest{
 			Username:    profileDetails.Username,
 			Phone:       profileDetails.PhoneNumber,
-			Email:       profileDetails.Email,
 			FirstName:   profileDetails.FirstName,
 			LastName:    profileDetails.LastName,
 			Gender:      profileDetails.Gender,
