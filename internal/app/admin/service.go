@@ -63,6 +63,7 @@ func NewService(repo Repository, notificationClient notificationClient.EmailServ
 		repo:               repo,
 		notificationClient: notificationClient,
 		authClient:         authClient,
+		movieBooking:       movieBooking,
 		theaterClient:      theaterClient,
 	}
 }
@@ -200,6 +201,7 @@ func (s *service) GetTheaterByID(ctx context.Context, id int) (*Theater, error) 
 		return nil, err
 	}
 	return &Theater{
+		ID:              uint(response.Theater.TheaterId),
 		Name:            response.Theater.Name,
 		Place:           response.Theater.Place,
 		City:            response.Theater.City,
@@ -294,6 +296,7 @@ func (s *service) ListMovies(ctx context.Context) ([]Movie, error) {
 			Genre:       m.Genre,
 			ReleaseDate: m.ReleaseDate,
 			Rating:      float64(m.Rating),
+			Language:    m.Language,
 		}
 		movies = append(movies, movie)
 	}

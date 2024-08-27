@@ -191,6 +191,7 @@ func (h *GrpcHandler) ListMovies(ctx context.Context, req *user_admin.ListMovies
 			Genre:       m.Genre,
 			ReleaseDate: m.ReleaseDate,
 			Rating:      float32(m.Rating),
+			Language:    m.Language,
 		}
 		grpcMovies = append(grpcMovies, grpcMovie)
 	}
