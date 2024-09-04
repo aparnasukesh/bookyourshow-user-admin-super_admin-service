@@ -60,26 +60,46 @@ func (h *GrpcHandler) AdminApproval(ctx context.Context, req *user_admin.AdminAp
 
 }
 
-// movies
-func (h *GrpcHandler) RegisterMovie(ctx context.Context, req *user_admin.RegisterMovieRequest) (*user_admin.RegisterMovieResponse, error) {
-	movieId, err := h.svc.RegisterMovie(ctx, Movie{
-		Title:       req.Title,
-		Description: req.Description,
-		Duration:    int(req.Duration),
-		Genre:       req.Genre,
-		ReleaseDate: req.ReleaseDate,
-		Rating:      float64(req.Rating),
-		Language:    req.Language,
-	})
+func (h *GrpcHandler) ListAllAdmin(ctx context.Context, req *user_admin.ListAllAdminRequest) (*user_admin.ListAllAdminResponse, error) {
+	admins, err := h.svc.ListAllAdmin(ctx)
 	if err != nil {
 		return nil, err
 	}
-	return &user_admin.RegisterMovieResponse{
-		MovieId: uint32(movieId),
-		Message: "create movie successfull",
+	response := []*user_admin.Admin{}
+	for _, res := range admins {
+		admin := &user_admin.Admin{
+			Id:        int32(res.ID),
+			Username:  res.Username,
+			Phone:     res.PhoneNumber,
+			Email:     res.Email,
+			FirstName: res.FirstName,
+			LastName:  res.LastName,
+			Gender:    res.Gender,
+		}
+		response = append(response, admin)
+	}
+	return &user_admin.ListAllAdminResponse{
+		Admin: response,
 	}, nil
 }
 
+func (h *GrpcHandler) GetAdminByID(ctx context.Context, req *user_admin.GetAdminByIdRequest) (*user_admin.GetAdminByIdResponse, error) {
+	admin, err := h.svc.GetAdminByID(ctx, int(req.AdminId))
+	if err != nil {
+		return nil, err
+	}
+	return &user_admin.GetAdminByIdResponse{
+		Admin: &user_admin.Admin{
+			Id:        int32(admin.ID),
+			Username:  admin.Username,
+			Phone:     admin.PhoneNumber,
+			Email:     admin.Email,
+			FirstName: admin.FirstName,
+			LastName:  admin.LastName,
+			Gender:    admin.Gender,
+		},
+	}, nil
+}
 func (h *GrpcHandler) DeleteMovie(ctx context.Context, req *user_admin.DeleteMovieRequest) (*user_admin.DeleteMovieResponse, error) {
 	err := h.svc.DeleteMovie(ctx, int(req.MovieId))
 	if err != nil {

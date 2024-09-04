@@ -3,14 +3,18 @@ package superadmin
 import (
 	"context"
 	"errors"
+	"fmt"
 
 	authClient "github.com/aparnasukesh/inter-communication/auth"
 	"github.com/aparnasukesh/inter-communication/movie_booking"
 	notificationClient "github.com/aparnasukesh/inter-communication/notification"
+	"github.com/aparnasukesh/user-admin-super_admin-svc/internal/app/admin"
+	"gorm.io/gorm"
 )
 
 type service struct {
 	repo               Repository
+	adminRepo          admin.Repository
 	notificationClient notificationClient.EmailServiceClient
 	authClient         authClient.JWT_TokenServiceClient
 	movieBooking       movie_booking.MovieServiceClient
@@ -21,6 +25,8 @@ type Service interface {
 	LoginSuperAdmin(ctx context.Context, user Admin) (string, error)
 	ListAdminRequests(ctx context.Context) ([]AdminRequests, error)
 	AdminApproval(ctx context.Context, email string, isVerified bool) error
+	ListAllAdmin(ctx context.Context) ([]admin.Admin, error)
+	GetAdminByID(ctx context.Context, id int) (*admin.Admin, error)
 	//movies
 	RegisterMovie(ctx context.Context, movie Movie) (uint, error)
 	UpdateMovie(ctx context.Context, movie Movie, movieId int) error
@@ -53,13 +59,14 @@ type Service interface {
 	ListSeatCategories(ctx context.Context) ([]SeatCategory, error)
 }
 
-func NewService(repo Repository, notificationClient notificationClient.EmailServiceClient, authClient authClient.JWT_TokenServiceClient, movieBookingClient movie_booking.MovieServiceClient, theaterClient movie_booking.TheatreServiceClient) Service {
+func NewService(repo Repository, adminRepo admin.Repository, notificationClient notificationClient.EmailServiceClient, authClient authClient.JWT_TokenServiceClient, movieBookingClient movie_booking.MovieServiceClient, theaterClient movie_booking.TheatreServiceClient) Service {
 	return &service{
 		repo:               repo,
 		notificationClient: notificationClient,
 		authClient:         authClient,
 		movieBooking:       movieBookingClient,
 		theaterClient:      theaterClient,
+		adminRepo:          adminRepo,
 	}
 }
 
@@ -124,6 +131,29 @@ func (s *service) AdminApproval(ctx context.Context, email string, isVerified bo
 	return nil
 }
 
+func (s *service) ListAllAdmin(ctx context.Context) ([]admin.Admin, error) {
+	admins, err := s.adminRepo.ListAllAdmin(ctx)
+	if err != nil {
+		return nil, err
+	}
+	if len(admins) < 1 {
+		return nil, errors.New("no admins found")
+	}
+	return admins, nil
+}
+
+func (s *service) GetAdminByID(ctx context.Context, id int) (*admin.Admin, error) {
+	admin, err := s.adminRepo.GetAdminByID(ctx, id)
+	if err != nil && err != gorm.ErrRecordNotFound {
+		return nil, err
+	}
+	if err == gorm.ErrRecordNotFound {
+		return nil, fmt.Errorf("no amdin is found with id %d", id)
+	}
+	return admin, nil
+}
+
+// Movies
 func (s *service) RegisterMovie(ctx context.Context, movie Movie) (uint, error) {
 	response, err := s.movieBooking.RegisterMovie(ctx, &movie_booking.RegisterMovieRequest{
 		Title:       movie.Title,

@@ -19,6 +19,8 @@ type Repository interface {
 	CheckAdminStatus(ctx context.Context, email string) (string, error)
 	CreateAdminStatus(ctx context.Context, req *AdminStatus) error
 	CheckAdminRole(ctx context.Context, userID uint) (bool, error)
+	ListAllAdmin(ctx context.Context) ([]Admin, error)
+	GetAdminByID(ctx context.Context, id int) (*Admin, error)
 }
 
 func NewRepository(db *gorm.DB) Repository {
@@ -96,4 +98,25 @@ func (r *repository) CheckAdminRole(ctx context.Context, userID uint) (bool, err
 		return false, err
 	}
 	return true, nil
+}
+
+func (r *repository) ListAllAdmin(ctx context.Context) ([]Admin, error) {
+	var admins []Admin
+	result := r.db.Find(&admins)
+	if result.Error != nil {
+		return nil, result.Error
+	}
+	return admins, nil
+}
+
+func (r *repository) GetAdminByID(ctx context.Context, id int) (*Admin, error) {
+	admin := &Admin{}
+	result := r.db.Where("id =?", id).First(&admin)
+	if result.Error != nil {
+		return nil, result.Error
+	}
+	if result.RowsAffected == 0 {
+		return nil, gorm.ErrRecordNotFound
+	}
+	return admin, nil
 }
