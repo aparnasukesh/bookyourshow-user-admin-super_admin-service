@@ -9,18 +9,20 @@ import (
 	"github.com/aparnasukesh/inter-communication/movie_booking"
 	notificationClient "github.com/aparnasukesh/inter-communication/notification"
 	"github.com/aparnasukesh/user-admin-super_admin-svc/internal/app/admin"
+	"github.com/aparnasukesh/user-admin-super_admin-svc/internal/app/user"
+
 	"gorm.io/gorm"
 )
 
 type service struct {
 	repo               Repository
 	adminRepo          admin.Repository
+	userRepo           user.UserRepository
 	notificationClient notificationClient.EmailServiceClient
 	authClient         authClient.JWT_TokenServiceClient
 	movieBooking       movie_booking.MovieServiceClient
 	theaterClient      movie_booking.TheatreServiceClient
 }
-
 type Service interface {
 	LoginSuperAdmin(ctx context.Context, user Admin) (string, error)
 	ListAdminRequests(ctx context.Context) ([]AdminRequests, error)
@@ -57,9 +59,14 @@ type Service interface {
 	GetSeatCategoryByName(ctx context.Context, name string) (*SeatCategory, error)
 	UpdateSeatCategory(ctx context.Context, id int, seatCategory SeatCategory) error
 	ListSeatCategories(ctx context.Context) ([]SeatCategory, error)
+	// User
+	ListAllUser(ctx context.Context) ([]user.User, error)
+	GetUserByID(ctx context.Context, id int) (*user.User, error)
+	BlockUser(ctx context.Context, id int) error
+	UnBlockUser(ctx context.Context, id int) error
 }
 
-func NewService(repo Repository, adminRepo admin.Repository, notificationClient notificationClient.EmailServiceClient, authClient authClient.JWT_TokenServiceClient, movieBookingClient movie_booking.MovieServiceClient, theaterClient movie_booking.TheatreServiceClient) Service {
+func NewService(repo Repository, adminRepo admin.Repository, userRepo user.UserRepository, notificationClient notificationClient.EmailServiceClient, authClient authClient.JWT_TokenServiceClient, movieBookingClient movie_booking.MovieServiceClient, theaterClient movie_booking.TheatreServiceClient) Service {
 	return &service{
 		repo:               repo,
 		notificationClient: notificationClient,
@@ -67,6 +74,7 @@ func NewService(repo Repository, adminRepo admin.Repository, notificationClient 
 		movieBooking:       movieBookingClient,
 		theaterClient:      theaterClient,
 		adminRepo:          adminRepo,
+		userRepo:           userRepo,
 	}
 }
 
@@ -498,6 +506,50 @@ func (s *service) UpdateSeatCategory(ctx context.Context, id int, seatCategory S
 	})
 	if err != nil {
 		return err
+	}
+	return nil
+}
+
+func (s *service) BlockUser(ctx context.Context, id int) error {
+	err := s.userRepo.BlockUser(ctx, id)
+	if err != nil && err != gorm.ErrRecordNotFound {
+		return err
+	}
+	if err == gorm.ErrRecordNotFound {
+		return fmt.Errorf("no user found with id %d", id)
+	}
+	return nil
+}
+
+func (s *service) GetUserByID(ctx context.Context, id int) (*user.User, error) {
+	user, err := s.userRepo.GetUserByID(ctx, id)
+	if err != nil && err != gorm.ErrRecordNotFound {
+		return nil, err
+	}
+	if err == gorm.ErrRecordNotFound {
+		return nil, fmt.Errorf("no user found with id %d", id)
+	}
+	return user, nil
+}
+
+func (s *service) ListAllUser(ctx context.Context) ([]user.User, error) {
+	users, err := s.userRepo.ListAllUser(ctx)
+	if err != nil {
+		return nil, err
+	}
+	if len(users) < 1 {
+		return nil, errors.New("no users found")
+	}
+	return users, nil
+}
+
+func (s *service) UnBlockUser(ctx context.Context, id int) error {
+	err := s.userRepo.UnBlockUser(ctx, id)
+	if err != nil && err != gorm.ErrRecordNotFound {
+		return err
+	}
+	if err == gorm.ErrRecordNotFound {
+		return fmt.Errorf("no user found with id %d", id)
 	}
 	return nil
 }

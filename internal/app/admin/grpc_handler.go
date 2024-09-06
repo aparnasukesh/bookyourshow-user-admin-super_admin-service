@@ -54,6 +54,43 @@ func (h *GrpcHandler) LoginAdmin(ctx context.Context, req *user_admin.LoginAdmin
 	}, nil
 }
 
+func (h *GrpcHandler) GetAdminProfile(ctx context.Context, req *user_admin.GetProfileRequest) (*user_admin.GetProfileResponse, error) {
+	admin, err := h.svc.GetAdminProfile(ctx, int(req.UserId))
+	if err != nil {
+		return nil, err
+	}
+	return &user_admin.GetProfileResponse{
+		Status:     "success",
+		StatusCode: 200,
+		ProfileDetails: &user_admin.Admin{
+			Id:          int32(admin.ID),
+			Username:    admin.Username,
+			Phone:       admin.PhoneNumber,
+			Email:       admin.Email,
+			FirstName:   admin.FirstName,
+			LastName:    admin.LastName,
+			Gender:      admin.Gender,
+			DateOfBirth: admin.DateOfBirth,
+			IsVerified:  admin.IsVerified,
+		},
+	}, nil
+}
+
+func (h *GrpcHandler) UpdateAdminProfile(ctx context.Context, req *user_admin.UpdateAdminProfileRequest) (*user_admin.UpdateAdminProfileResponse, error) {
+	err := h.svc.UpdateAdminProfile(ctx, req.UserId, AdminProfileDetails{
+		Username:    req.Username,
+		PhoneNumber: req.Phone,
+		FirstName:   req.FirstName,
+		LastName:    req.LastName,
+		DateOfBirth: req.DateOfBirth,
+		Gender:      req.Gender,
+	})
+	if err != nil {
+		return nil, err
+	}
+	return nil, nil
+}
+
 // Theater
 func (h *GrpcHandler) AddTheater(ctx context.Context, req *user_admin.AddTheaterRequest) (*user_admin.AddTheaterResponse, error) {
 	if err := h.svc.AddTheater(ctx, &Theater{

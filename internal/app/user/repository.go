@@ -23,6 +23,9 @@ type UserRepository interface {
 	UserApproval(ctx context.Context, email string) error
 	CheckUserRole(ctx context.Context, userID uint) (bool, error)
 	CreateUserRoles(ctx context.Context, userRoles UserRole) error
+	ListAllUser(ctx context.Context) ([]User, error)
+	UnBlockUser(ctx context.Context, id int) error
+	BlockUser(ctx context.Context, id int) error
 }
 
 func NewRepository(db *gorm.DB) UserRepository {
@@ -83,9 +86,12 @@ func (r *repository) GetUserByEmail(ctx context.Context, email string) (*User, e
 
 func (r *repository) GetUserByID(ctx context.Context, id int) (*User, error) {
 	userData := User{}
-	res := r.db.Table("users").Select("id,created_at,updated_at,deleted_at,username,email,phone_number,first_name,last_name,dateofbirth,gender").Where("id= ?", id).First(&userData)
+	res := r.db.Table("users").Select("id,created_at,updated_at,deleted_at,username,email,phone_number,first_name,last_name,date_of_birth,gender,is_verified").Where("id= ?", id).First(&userData)
 	if res.Error != nil {
 		return nil, res.Error
+	}
+	if res.RowsAffected == 0 {
+		return nil, gorm.ErrRecordNotFound
 	}
 	return &userData, nil
 }
@@ -154,6 +160,50 @@ func (r *repository) CheckUserRole(ctx context.Context, userID uint) (bool, erro
 func (r *repository) CreateUserRoles(ctx context.Context, userRoles UserRole) error {
 	if err := r.db.Create(&userRoles).Error; err != nil {
 		return err
+	}
+	return nil
+}
+
+func (r *repository) ListAllUser(ctx context.Context) ([]User, error) {
+	user := []User{}
+	result := r.db.Find(&user)
+	if result.Error != nil {
+		return nil, result.Error
+	}
+	return user, nil
+}
+
+func (r *repository) BlockUser(ctx context.Context, id int) error {
+	userData := User{}
+	res := r.db.First(&userData, id)
+	if res.Error != nil {
+		return res.Error
+	}
+	if !userData.IsVerified {
+		return errors.New("user already blocked")
+	}
+
+	userData.IsVerified = false
+	err := r.db.Save(&userData)
+	if err.Error != nil {
+		return err.Error
+	}
+	return nil
+}
+
+func (r *repository) UnBlockUser(ctx context.Context, id int) error {
+	userData := User{}
+	res := r.db.First(&userData, id)
+	if res.Error != nil {
+		return res.Error
+	}
+	if userData.IsVerified {
+		return errors.New("user already unblocked")
+	}
+	userData.IsVerified = true
+	err := r.db.Save(&userData)
+	if err != nil {
+		return err.Error
 	}
 	return nil
 }

@@ -20,6 +20,19 @@ type Admin struct {
 	Roles       []Role `gorm:"many2many:admin_roles;" json:"roles"`
 }
 
+type AdminProfileDetails struct {
+	ID          int    `json:"id"`
+	Username    string `json:"username" validate:"required,min=8,max=24"`
+	Password    string `json:"password" validate:"required,min=6,max=12"`
+	PhoneNumber string `json:"phone" validate:"required,len=10"`
+	Email       string `json:"email" validate:"email,required"`
+	FirstName   string `json:"firstname" validate:"required"`
+	LastName    string `json:"lastname" validate:"required"`
+	DateOfBirth string `json:"date_of_birth"`
+	Gender      string `json:"gender"`
+	IsVerified  bool   `json:"is_verified"`
+}
+
 type Role struct {
 	gorm.Model
 	RoleName string  `gorm:"size:255;not null;unique" json:"role_name" validate:"required"`

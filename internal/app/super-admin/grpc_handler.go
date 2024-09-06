@@ -421,3 +421,66 @@ func (h *GrpcHandler) ListSeatCategories(ctx context.Context, req *user_admin.Li
 		SeatCategories: grpcSeatCategories,
 	}, nil
 }
+
+// User
+func (h *GrpcHandler) ListAllUser(ctx context.Context, req *user_admin.ListAllUserRequest) (*user_admin.ListAllUserResponse, error) {
+	users, err := h.svc.ListAllUser(ctx)
+	if err != nil {
+		return nil, err
+	}
+	response := []*user_admin.User{}
+
+	for _, res := range users {
+		user := user_admin.User{
+			Id:          int32(res.ID),
+			Username:    res.Username,
+			Phone:       res.PhoneNumber,
+			Email:       res.Email,
+			FirstName:   res.FirstName,
+			LastName:    res.LastName,
+			Gender:      res.Gender,
+			DateOfBirth: res.DateOfBirth,
+			IsVerified:  res.IsVerified,
+		}
+		response = append(response, &user)
+	}
+	return &user_admin.ListAllUserResponse{
+		User: response,
+	}, nil
+}
+
+func (h *GrpcHandler) GetUserByID(ctx context.Context, req *user_admin.GetUserByIdRequest) (*user_admin.GetUserByIdResponse, error) {
+	user, err := h.svc.GetUserByID(ctx, int(req.UserId))
+	if err != nil {
+		return nil, err
+	}
+	return &user_admin.GetUserByIdResponse{
+		User: &user_admin.User{
+			Id:          int32(user.ID),
+			Username:    user.Username,
+			Phone:       user.PhoneNumber,
+			Email:       user.Email,
+			FirstName:   user.FirstName,
+			LastName:    user.LastName,
+			Gender:      user.Gender,
+			DateOfBirth: user.DateOfBirth,
+			IsVerified:  user.IsVerified,
+		},
+	}, nil
+}
+
+func (h *GrpcHandler) BlockUser(ctx context.Context, req *user_admin.BlockUserRequest) (*user_admin.BlockUserResponse, error) {
+	err := h.svc.BlockUser(ctx, int(req.UserId))
+	if err != nil {
+		return nil, err
+	}
+	return nil, nil
+}
+
+func (h *GrpcHandler) UnBlockUser(ctx context.Context, req *user_admin.UnBlockUserRequest) (*user_admin.UnBlockUserResponse, error) {
+	err := h.svc.UnBlockUser(ctx, int(req.UserId))
+	if err != nil {
+		return nil, err
+	}
+	return nil, nil
+}

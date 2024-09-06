@@ -78,13 +78,16 @@ func (h *GrpcHandler) GetUserProfile(ctx context.Context, req *user_admin.GetPro
 	return &user_admin.GetProfileResponse{
 		Status:     "User profile retrieved successfully",
 		StatusCode: 200,
-		ProfileDetails: &user_admin.UpdateUserProfileRequest{
+		ProfileDetails: &user_admin.Admin{
+			Id:          int32(profileDetails.ID),
 			Username:    profileDetails.Username,
 			Phone:       profileDetails.PhoneNumber,
+			Email:       profileDetails.Email,
 			FirstName:   profileDetails.FirstName,
 			LastName:    profileDetails.LastName,
 			Gender:      profileDetails.Gender,
 			DateOfBirth: profileDetails.DateOfBirth,
+			IsVerified:  profileDetails.IsVerified,
 		},
 	}, nil
 }

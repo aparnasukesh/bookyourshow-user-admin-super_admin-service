@@ -51,7 +51,7 @@ func InitResources(cfg config.Config) (func() error, error) {
 
 	// SuperAdmin Module initialization
 	superAdminRepo := superadmin.NewRepository(db)
-	superAdminService := superadmin.NewService(superAdminRepo, adminRepo, notificationClient, authClient, movieBookingClient, theaterClient)
+	superAdminService := superadmin.NewService(superAdminRepo, adminRepo, repo, notificationClient, authClient, movieBookingClient, theaterClient)
 	superAdminGrpcHandler := superadmin.NewGrpcHandler(superAdminService)
 
 	// Server initialization
