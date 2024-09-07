@@ -91,3 +91,18 @@ func (h *GrpcHandler) GetUserProfile(ctx context.Context, req *user_admin.GetPro
 		},
 	}, nil
 }
+
+func (h *GrpcHandler) UpdateUserProfile(ctx context.Context, req *user_admin.UpdateUserProfileRequest) (*user_admin.UpdateUserProfileResponse, error) {
+	err := h.svc.UpdateUserProfile(ctx, int(req.UserId), UserProfileDetails{
+		Username:    req.Username,
+		PhoneNumber: req.Phone,
+		FirstName:   req.FirstName,
+		LastName:    req.LastName,
+		DateOfBirth: req.DateOfBirth,
+		Gender:      req.Gender,
+	})
+	if err != nil {
+		return nil, err
+	}
+	return nil, nil
+}

@@ -3,6 +3,7 @@ package admin
 import (
 	"context"
 	"errors"
+	"fmt"
 	"time"
 
 	authClient "github.com/aparnasukesh/inter-communication/auth"
@@ -24,6 +25,8 @@ type service struct {
 type Service interface {
 	RegisterAdmin(ctx context.Context, admin Admin) error
 	LoginAdmin(ctx context.Context, admin Admin) (string, error)
+	GetAdminProfile(ctx context.Context, id int) (*Admin, error)
+	UpdateAdminProfile(ctx context.Context, id int, admin AdminProfileDetails) error
 	//Theater
 	AddTheater(ctx context.Context, theater *Theater) error
 	DeleteTheaterByID(ctx context.Context, id int) error
@@ -153,6 +156,47 @@ func (s *service) LoginAdmin(ctx context.Context, admin Admin) (string, error) {
 		return "", err
 	}
 	return response.Token, nil
+}
+
+func (s *service) GetAdminProfile(ctx context.Context, id int) (*Admin, error) {
+	admin, err := s.repo.GetAdminByID(ctx, id)
+	if err != nil && err != gorm.ErrRecordNotFound {
+		return nil, err
+	}
+	if err == gorm.ErrRecordNotFound {
+		return nil, fmt.Errorf("admin not found with id %d", id)
+	}
+	return admin, nil
+}
+
+func (s *service) UpdateAdminProfile(ctx context.Context, id int, admin AdminProfileDetails) error {
+	data, err := s.repo.GetAdminByID(ctx, id)
+	if err != nil {
+		return fmt.Errorf("failed to find admin: %w", err)
+	}
+	if admin.Username != "" {
+		data.Username = admin.Username
+	}
+	if admin.PhoneNumber != "" {
+		data.PhoneNumber = admin.PhoneNumber
+	}
+	if admin.FirstName != "" {
+		data.FirstName = admin.FirstName
+	}
+	if admin.LastName != "" {
+		data.LastName = admin.LastName
+	}
+	if admin.DateOfBirth != "" {
+		data.DateOfBirth = admin.DateOfBirth
+	}
+	if admin.Gender != "" {
+		data.Gender = admin.Gender
+	}
+	if err := s.repo.UpdateAdminProfile(ctx, data); err != nil {
+		return fmt.Errorf("failed to update admin: %w", err)
+	}
+
+	return nil
 }
 
 // Theater

@@ -21,6 +21,7 @@ type Service interface {
 	ValidateUser(ctx context.Context, user User) error
 	LoginUser(ctx context.Context, user User) (string, error)
 	GetProfileDetails(ctx context.Context, userId int) (*UserProfileDetails, error)
+	UpdateUserProfile(ctx context.Context, id int, admin UserProfileDetails) error
 }
 
 func NewService(repo UserRepository, notificationClient notificationClient.EmailServiceClient, authClient authClient.JWT_TokenServiceClient) Service {
@@ -119,4 +120,34 @@ func (s *service) GetProfileDetails(ctx context.Context, userId int) (*UserProfi
 		return nil, err
 	}
 	return profileDetails, nil
+}
+
+func (s *service) UpdateUserProfile(ctx context.Context, id int, user UserProfileDetails) error {
+	data, err := s.repo.GetUserDetails(ctx, id)
+	if err != nil {
+		return fmt.Errorf("failed to find user: %w", err)
+	}
+	if user.Username != "" {
+		data.Username = user.Username
+	}
+	if user.PhoneNumber != "" {
+		data.PhoneNumber = user.PhoneNumber
+	}
+	if user.FirstName != "" {
+		data.FirstName = user.FirstName
+	}
+	if user.LastName != "" {
+		data.LastName = user.LastName
+	}
+	if user.DateOfBirth != "" {
+		data.DateOfBirth = user.DateOfBirth
+	}
+	if user.Gender != "" {
+		data.Gender = user.Gender
+	}
+	if err := s.repo.UpdateUserProfile(ctx, data); err != nil {
+		return fmt.Errorf("failed to update user: %w", err)
+	}
+
+	return nil
 }

@@ -77,7 +77,7 @@ func (h *GrpcHandler) GetAdminProfile(ctx context.Context, req *user_admin.GetPr
 }
 
 func (h *GrpcHandler) UpdateAdminProfile(ctx context.Context, req *user_admin.UpdateAdminProfileRequest) (*user_admin.UpdateAdminProfileResponse, error) {
-	err := h.svc.UpdateAdminProfile(ctx, req.UserId, AdminProfileDetails{
+	err := h.svc.UpdateAdminProfile(ctx, int(req.UserId), AdminProfileDetails{
 		Username:    req.Username,
 		PhoneNumber: req.Phone,
 		FirstName:   req.FirstName,

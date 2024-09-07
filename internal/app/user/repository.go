@@ -26,6 +26,8 @@ type UserRepository interface {
 	ListAllUser(ctx context.Context) ([]User, error)
 	UnBlockUser(ctx context.Context, id int) error
 	BlockUser(ctx context.Context, id int) error
+	GetUserDetails(ctx context.Context, id int) (*User, error)
+	UpdateUserProfile(ctx context.Context, data *User) error
 }
 
 func NewRepository(db *gorm.DB) UserRepository {
@@ -94,6 +96,18 @@ func (r *repository) GetUserByID(ctx context.Context, id int) (*User, error) {
 		return nil, gorm.ErrRecordNotFound
 	}
 	return &userData, nil
+}
+
+func (r *repository) GetUserDetails(ctx context.Context, id int) (*User, error) {
+	user := &User{}
+	result := r.db.Where("id =?", id).First(&user)
+	if result.Error != nil {
+		return nil, result.Error
+	}
+	if result.RowsAffected == 0 {
+		return nil, gorm.ErrRecordNotFound
+	}
+	return user, nil
 }
 
 func (r *repository) DeleteUserByEmail(ctx context.Context, userData User) error {
@@ -206,4 +220,12 @@ func (r *repository) UnBlockUser(ctx context.Context, id int) error {
 		return err.Error
 	}
 	return nil
+}
+
+func (r *repository) UpdateUserProfile(ctx context.Context, data *User) error {
+	if err := r.db.Save(data).Error; err != nil {
+		return err
+	}
+	return nil
+
 }

@@ -21,6 +21,7 @@ type Repository interface {
 	CheckAdminRole(ctx context.Context, userID uint) (bool, error)
 	ListAllAdmin(ctx context.Context) ([]Admin, error)
 	GetAdminByID(ctx context.Context, id int) (*Admin, error)
+	UpdateAdminProfile(ctx context.Context, data *Admin) error
 }
 
 func NewRepository(db *gorm.DB) Repository {
@@ -119,4 +120,12 @@ func (r *repository) GetAdminByID(ctx context.Context, id int) (*Admin, error) {
 		return nil, gorm.ErrRecordNotFound
 	}
 	return admin, nil
+}
+
+func (r *repository) UpdateAdminProfile(ctx context.Context, data *Admin) error {
+	if err := r.db.Save(data).Error; err != nil {
+		return err
+	}
+	return nil
+
 }
