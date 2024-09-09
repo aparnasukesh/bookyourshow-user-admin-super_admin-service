@@ -106,3 +106,23 @@ func (h *GrpcHandler) UpdateUserProfile(ctx context.Context, req *user_admin.Upd
 	}
 	return nil, nil
 }
+
+func (h *GrpcHandler) ForgotUserPassword(ctx context.Context, req *user_admin.ForgotPasswordRequest) (*user_admin.ForgotPasswordResponse, error) {
+	err := h.svc.ForgotPassword(ctx, req.Email)
+	if err != nil {
+		return nil, err
+	}
+	return nil, nil
+}
+
+func (h *GrpcHandler) ResetUserPassword(ctx context.Context, req *user_admin.ResetPasswordRequest) (*user_admin.ResetPasswordResponse, error) {
+	err := h.svc.ResetPassword(ctx, ResetPassword{
+		Email:       req.Email,
+		Otp:         req.Otp,
+		NewPassword: req.NewPassword,
+	})
+	if err != nil {
+		return nil, err
+	}
+	return nil, nil
+}

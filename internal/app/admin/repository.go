@@ -22,6 +22,8 @@ type Repository interface {
 	ListAllAdmin(ctx context.Context) ([]Admin, error)
 	GetAdminByID(ctx context.Context, id int) (*Admin, error)
 	UpdateAdminProfile(ctx context.Context, data *Admin) error
+	UpdateOtp(ctx context.Context, email, otp string) error
+	ResetPassword(ctx context.Context, email string, password string) error
 }
 
 func NewRepository(db *gorm.DB) Repository {
@@ -128,4 +130,20 @@ func (r *repository) UpdateAdminProfile(ctx context.Context, data *Admin) error 
 	}
 	return nil
 
+}
+
+func (r *repository) UpdateOtp(ctx context.Context, email, otp string) error {
+	admin := &Admin{}
+	if err := r.db.Model(admin).Where("email =?", email).Update("otp", otp).Error; err != nil {
+		return err
+	}
+	return nil
+}
+
+func (r *repository) ResetPassword(ctx context.Context, email string, password string) error {
+	admin := &Admin{}
+	if err := r.db.Model(&admin).Where("email=?", email).Update("password", password).Error; err != nil {
+		return err
+	}
+	return nil
 }

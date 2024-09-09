@@ -91,6 +91,26 @@ func (h *GrpcHandler) UpdateAdminProfile(ctx context.Context, req *user_admin.Up
 	return nil, nil
 }
 
+func (h *GrpcHandler) ForgotAdminPassword(ctx context.Context, req *user_admin.ForgotPasswordRequest) (*user_admin.ForgotPasswordResponse, error) {
+	err := h.svc.ForgotPassword(ctx, req.Email)
+	if err != nil {
+		return nil, err
+	}
+	return nil, nil
+}
+
+func (h *GrpcHandler) ResetAdminPassword(ctx context.Context, req *user_admin.ResetPasswordRequest) (*user_admin.ResetPasswordResponse, error) {
+	err := h.svc.ResetPassword(ctx, ResetPassword{
+		Email:       req.Email,
+		Otp:         req.Otp,
+		NewPassword: req.NewPassword,
+	})
+	if err != nil {
+		return nil, err
+	}
+	return nil, nil
+}
+
 // Theater
 func (h *GrpcHandler) AddTheater(ctx context.Context, req *user_admin.AddTheaterRequest) (*user_admin.AddTheaterResponse, error) {
 	if err := h.svc.AddTheater(ctx, &Theater{

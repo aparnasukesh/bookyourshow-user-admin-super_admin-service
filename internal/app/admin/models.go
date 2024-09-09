@@ -17,6 +17,7 @@ type Admin struct {
 	DateOfBirth string `json:"date_of_birth"`
 	Gender      string `json:"gender"`
 	IsVerified  bool   `gorm:"default:false" json:"is_verified"`
+	Otp         string `json:"otp"`
 	Roles       []Role `gorm:"many2many:admin_roles;" json:"roles"`
 }
 
@@ -117,4 +118,14 @@ type Showtime struct {
 	ScreenID int       `json:"screen_id"`
 	ShowDate time.Time `json:"show_date"`
 	ShowTime time.Time `json:"show_time"`
+}
+
+type ForgotPassword struct {
+	Email string `json:"email"`
+}
+
+type ResetPassword struct {
+	Email       string `json:"email"`
+	Otp         string `json:"otp"`
+	NewPassword string `json:"new_password" validate:"required,min=6,max=12"`
 }

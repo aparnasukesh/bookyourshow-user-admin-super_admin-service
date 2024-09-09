@@ -27,6 +27,8 @@ type Service interface {
 	LoginAdmin(ctx context.Context, admin Admin) (string, error)
 	GetAdminProfile(ctx context.Context, id int) (*Admin, error)
 	UpdateAdminProfile(ctx context.Context, id int, admin AdminProfileDetails) error
+	ForgotPassword(ctx context.Context, email string) error
+	ResetPassword(ctx context.Context, data ResetPassword) error
 	//Theater
 	AddTheater(ctx context.Context, theater *Theater) error
 	DeleteTheaterByID(ctx context.Context, id int) error
@@ -196,6 +198,52 @@ func (s *service) UpdateAdminProfile(ctx context.Context, id int, admin AdminPro
 		return fmt.Errorf("failed to update admin: %w", err)
 	}
 
+	return nil
+}
+
+func (s *service) ForgotPassword(ctx context.Context, email string) error {
+	user, err := s.repo.GetAdminByEmail(ctx, email)
+	if err != nil {
+		return err
+	}
+	otp, err := utils.GenCaptchaCode()
+	if err != nil {
+		return err
+	}
+	user.Otp = otp
+	_, err = s.notificationClient.SendResetPassWordEmail(ctx, &notificationClient.EmailRequest{
+		Email:       user.Email,
+		Otp:         otp,
+		BodyMessage: "",
+	})
+	if err != nil {
+		return fmt.Errorf("failed to send the password reset email")
+	}
+	err = s.repo.UpdateOtp(ctx, email, otp)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (s *service) ResetPassword(ctx context.Context, data ResetPassword) error {
+	user, err := s.repo.GetAdminByEmail(ctx, data.Email)
+	if err != nil {
+		return err
+	}
+
+	password := utils.HashPassword(data.NewPassword)
+	if data.Email != user.Email || data.Otp != user.Otp {
+		return errors.New("invalid otp")
+	}
+
+	if password == user.Password {
+		return errors.New("try another password")
+	}
+	err = s.repo.ResetPassword(ctx, user.Email, password)
+	if err != nil {
+		return err
+	}
 	return nil
 }
 

@@ -22,6 +22,8 @@ type Service interface {
 	LoginUser(ctx context.Context, user User) (string, error)
 	GetProfileDetails(ctx context.Context, userId int) (*UserProfileDetails, error)
 	UpdateUserProfile(ctx context.Context, id int, admin UserProfileDetails) error
+	ForgotPassword(ctx context.Context, email string) error
+	ResetPassword(ctx context.Context, data ResetPassword) error
 }
 
 func NewService(repo UserRepository, notificationClient notificationClient.EmailServiceClient, authClient authClient.JWT_TokenServiceClient) Service {
@@ -149,5 +151,51 @@ func (s *service) UpdateUserProfile(ctx context.Context, id int, user UserProfil
 		return fmt.Errorf("failed to update user: %w", err)
 	}
 
+	return nil
+}
+
+func (s *service) ForgotPassword(ctx context.Context, email string) error {
+	user, err := s.repo.GetUserByEmail(ctx, email)
+	if err != nil {
+		return err
+	}
+	otp, err := utils.GenCaptchaCode()
+	if err != nil {
+		return err
+	}
+	user.Otp = otp
+	_, err = s.notificationClient.SendResetPassWordEmail(ctx, &notificationClient.EmailRequest{
+		Email:       user.Email,
+		Otp:         otp,
+		BodyMessage: "",
+	})
+	if err != nil {
+		return fmt.Errorf("failed to send the password reset email")
+	}
+	err = s.repo.UpdateOtp(ctx, email, otp)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (s *service) ResetPassword(ctx context.Context, data ResetPassword) error {
+	user, err := s.repo.GetUserByEmail(ctx, data.Email)
+	if err != nil {
+		return err
+	}
+
+	password := utils.HashPassword(data.NewPassword)
+	if data.Email != user.Email || data.Otp != user.Otp {
+		return errors.New("invalid otp")
+	}
+
+	if password == user.Password {
+		return errors.New("try another password")
+	}
+	err = s.repo.ResetPassword(ctx, user.Email, password)
+	if err != nil {
+		return err
+	}
 	return nil
 }

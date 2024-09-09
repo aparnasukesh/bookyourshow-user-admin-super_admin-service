@@ -28,6 +28,8 @@ type UserRepository interface {
 	BlockUser(ctx context.Context, id int) error
 	GetUserDetails(ctx context.Context, id int) (*User, error)
 	UpdateUserProfile(ctx context.Context, data *User) error
+	UpdateOtp(ctx context.Context, email, otp string) error
+	ResetPassword(ctx context.Context, email string, password string) error
 }
 
 func NewRepository(db *gorm.DB) UserRepository {
@@ -228,4 +230,20 @@ func (r *repository) UpdateUserProfile(ctx context.Context, data *User) error {
 	}
 	return nil
 
+}
+
+func (r *repository) UpdateOtp(ctx context.Context, email, otp string) error {
+	user := &User{}
+	if err := r.db.Model(user).Where("email =?", email).Update("otp", otp).Error; err != nil {
+		return err
+	}
+	return nil
+}
+
+func (r *repository) ResetPassword(ctx context.Context, email string, password string) error {
+	user := &User{}
+	if err := r.db.Model(&user).Where("email=?", email).Update("password", password).Error; err != nil {
+		return err
+	}
+	return nil
 }
