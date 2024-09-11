@@ -512,3 +512,182 @@ func (h *GrpcHandler) ListShowtimes(ctx context.Context, req *user_admin.ListSho
 		Showtimes: grpcShowtimes,
 	}, nil
 }
+
+// Movie Schedule
+func (h *GrpcHandler) AddMovieSchedule(ctx context.Context, req *user_admin.AddMovieScheduleRequest) (*user_admin.AddMovieScheduleResponse, error) {
+	err := h.svc.AddMovieSchedule(ctx, MovieSchedule{
+		MovieID:    int(req.MovieSchedule.MovieId),
+		TheaterID:  int(req.MovieSchedule.TheaterId),
+		ShowtimeID: int(req.MovieSchedule.ShowtimeId),
+	})
+	if err != nil {
+		return nil, err
+	}
+	return &user_admin.AddMovieScheduleResponse{}, nil
+}
+
+func (h *GrpcHandler) UpdateMovieSchedule(ctx context.Context, req *user_admin.UpdateMovieScheduleRequest) (*user_admin.UpdateMovieScheduleResponse, error) {
+	err := h.svc.UpdateMovieSchedule(ctx, int(req.MovieSchedule.Id), MovieSchedule{
+		MovieID:    int(req.MovieSchedule.MovieId),
+		TheaterID:  int(req.MovieSchedule.TheaterId),
+		ShowtimeID: int(req.MovieSchedule.ShowtimeId),
+	})
+	if err != nil {
+		return nil, err
+	}
+	return &user_admin.UpdateMovieScheduleResponse{}, nil
+}
+
+func (h *GrpcHandler) GetAllMovieSchedules(ctx context.Context, req *user_admin.GetAllMovieScheduleRequest) (*user_admin.GetAllMovieScheduleResponse, error) {
+	movieSchedules, err := h.svc.GetAllMovieSchedules(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	var scheduleList []*user_admin.MovieSchedule
+	for _, schedule := range movieSchedules {
+		scheduleList = append(scheduleList, &user_admin.MovieSchedule{
+			Id:         int32(schedule.ID),
+			MovieId:    int32(schedule.MovieID),
+			TheaterId:  int32(schedule.TheaterID),
+			ShowtimeId: int32(schedule.ShowtimeID),
+		})
+	}
+	return &user_admin.GetAllMovieScheduleResponse{MovieSchedules: scheduleList}, nil
+}
+
+func (h *GrpcHandler) GetMovieScheduleByMovieID(ctx context.Context, req *user_admin.GetMovieScheduleByMovieIdRequest) (*user_admin.GetMovieScheduleByMovieIdResponse, error) {
+	movieSchedules, err := h.svc.GetMovieScheduleByMovieID(ctx, int(req.MovieId))
+	if err != nil {
+		return nil, err
+	}
+
+	var scheduleList []*user_admin.MovieSchedule
+	for _, schedule := range movieSchedules {
+		scheduleList = append(scheduleList, &user_admin.MovieSchedule{
+			Id:         int32(schedule.ID),
+			MovieId:    int32(schedule.MovieID),
+			TheaterId:  int32(schedule.TheaterID),
+			ShowtimeId: int32(schedule.ShowtimeID),
+		})
+	}
+	return &user_admin.GetMovieScheduleByMovieIdResponse{MovieSchedules: scheduleList}, nil
+}
+
+func (h *GrpcHandler) GetMovieScheduleByTheaterID(ctx context.Context, req *user_admin.GetMovieScheduleByTheaterIdRequest) (*user_admin.GetMovieScheduleByTheaterIdResponse, error) {
+	movieSchedules, err := h.svc.GetMovieScheduleByTheaterID(ctx, int(req.TheaterId))
+	if err != nil {
+		return nil, err
+	}
+
+	var scheduleList []*user_admin.MovieSchedule
+	for _, schedule := range movieSchedules {
+		scheduleList = append(scheduleList, &user_admin.MovieSchedule{
+			Id:         int32(schedule.ID),
+			MovieId:    int32(schedule.MovieID),
+			TheaterId:  int32(schedule.TheaterID),
+			ShowtimeId: int32(schedule.ShowtimeID),
+		})
+	}
+	return &user_admin.GetMovieScheduleByTheaterIdResponse{MovieSchedules: scheduleList}, nil
+}
+
+func (h *GrpcHandler) GetMovieScheduleByMovieIdAndTheaterId(ctx context.Context, req *user_admin.GetMovieScheduleByMovieIdAndTheaterIdRequest) (*user_admin.GetMovieScheduleByMovieIdAndTheaterIdResponse, error) {
+	movieSchedules, err := h.svc.GetMovieScheduleByMovieIdAndTheaterId(ctx, int(req.MovieId), int(req.TheaterId))
+	if err != nil {
+		return nil, err
+	}
+
+	var scheduleList []*user_admin.MovieSchedule
+	for _, schedule := range movieSchedules {
+		scheduleList = append(scheduleList, &user_admin.MovieSchedule{
+			Id:         int32(schedule.ID),
+			MovieId:    int32(schedule.MovieID),
+			TheaterId:  int32(schedule.TheaterID),
+			ShowtimeId: int32(schedule.ShowtimeID),
+		})
+	}
+	return &user_admin.GetMovieScheduleByMovieIdAndTheaterIdResponse{MovieSchedules: scheduleList}, nil
+}
+
+func (h *GrpcHandler) GetMovieScheduleByMovieIdAndShowTimeId(ctx context.Context, req *user_admin.GetMovieScheduleByMovieIdAndShowTimeIdRequest) (*user_admin.GetMovieScheduleByMovieIdAndShowTimeIdResponse, error) {
+	movieSchedules, err := h.svc.GetMovieScheduleByMovieIdAndShowTimeId(ctx, int(req.MovieId), int(req.ShowtimeId))
+	if err != nil {
+		return nil, err
+	}
+
+	var scheduleList []*user_admin.MovieSchedule
+	for _, schedule := range movieSchedules {
+		scheduleList = append(scheduleList, &user_admin.MovieSchedule{
+			Id:         int32(schedule.ID),
+			MovieId:    int32(schedule.MovieID),
+			TheaterId:  int32(schedule.TheaterID),
+			ShowtimeId: int32(schedule.ShowtimeID),
+		})
+	}
+	return &user_admin.GetMovieScheduleByMovieIdAndShowTimeIdResponse{
+		MovieSchedules: scheduleList,
+		Message:        "",
+	}, nil
+}
+
+func (h *GrpcHandler) GetMovieScheduleByTheaterIdAndShowTimeId(ctx context.Context, req *user_admin.GetGetMovieScheduleByTheaterIdAndShowTimeIdRequest) (*user_admin.GetGetMovieScheduleByTheaterIdAndShowTimeIdResponse, error) {
+	movieSchedules, err := h.svc.GetMovieScheduleByTheaterIdAndShowTimeId(ctx, int(req.TheaterId), int(req.ShowtimeId))
+	if err != nil {
+		return nil, err
+	}
+
+	var scheduleList []*user_admin.MovieSchedule
+	for _, schedule := range movieSchedules {
+		scheduleList = append(scheduleList, &user_admin.MovieSchedule{
+			Id:         int32(schedule.ID),
+			MovieId:    int32(schedule.MovieID),
+			TheaterId:  int32(schedule.TheaterID),
+			ShowtimeId: int32(schedule.ShowtimeID),
+		})
+	}
+	return &user_admin.GetGetMovieScheduleByTheaterIdAndShowTimeIdResponse{
+		MovieSchedules: scheduleList,
+		Message:        "",
+	}, nil
+}
+
+func (h *GrpcHandler) GetMovieScheduleByID(ctx context.Context, req *user_admin.GetMovieScheduleByIDRequest) (*user_admin.GetMovieScheduleByIDResponse, error) {
+	movieSchedule, err := h.svc.GetMovieScheduleByID(ctx, int(req.Id))
+	if err != nil {
+		return nil, err
+	}
+
+	return &user_admin.GetMovieScheduleByIDResponse{
+		MovieSchedule: &user_admin.MovieSchedule{
+			Id:         int32(movieSchedule.ID),
+			MovieId:    int32(movieSchedule.MovieID),
+			TheaterId:  int32(movieSchedule.TheaterID),
+			ShowtimeId: int32(movieSchedule.ShowtimeID),
+		},
+	}, nil
+}
+
+func (h *GrpcHandler) DeleteMovieScheduleById(ctx context.Context, req *user_admin.DeleteMovieScheduleByIdRequest) (*user_admin.DeleteMovieScheduleByIdResponse, error) {
+	err := h.svc.DeleteMovieScheduleById(ctx, int(req.Id))
+	if err != nil {
+		return nil, err
+	}
+	return &user_admin.DeleteMovieScheduleByIdResponse{}, nil
+}
+
+func (h *GrpcHandler) DeleteMovieScheduleByMovieIdAndTheaterId(ctx context.Context, req *user_admin.DeleteMovieScheduleByMovieIdAndTheaterIdRequest) (*user_admin.DeleteMovieScheduleByMovieIdAndTheaterIdResponse, error) {
+	err := h.svc.DeleteMovieScheduleByMovieIdAndTheaterId(ctx, int(req.MovieId), int(req.TheaterId))
+	if err != nil {
+		return nil, err
+	}
+	return &user_admin.DeleteMovieScheduleByMovieIdAndTheaterIdResponse{}, nil
+}
+
+func (h *GrpcHandler) DeleteMovieScheduleByMovieIdAndTheaterIdAndShowTimeId(ctx context.Context, req *user_admin.DeleteMovieScheduleByMovieIdAndTheaterIdAndShowTimeIdRequest) (*user_admin.DeleteMovieScheduleByMovieIdAndTheaterIdAndShowTimeIdResponse, error) {
+	err := h.svc.DeleteMovieScheduleByMovieIdAndTheaterIdAndShowTimeId(ctx, int(req.MovieId), int(req.TheaterId), int(req.ShowtimeId))
+	if err != nil {
+		return nil, err
+	}
+	return &user_admin.DeleteMovieScheduleByMovieIdAndTheaterIdAndShowTimeIdResponse{}, nil
+}

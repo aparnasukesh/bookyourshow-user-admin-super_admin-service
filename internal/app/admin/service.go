@@ -61,6 +61,19 @@ type Service interface {
 	GetShowtimeByDetails(ctx context.Context, movieID int, screenID int, showDate time.Time, showTime time.Time) (*Showtime, error)
 	UpdateShowtime(ctx context.Context, id int, showtime Showtime) error
 	ListShowtimes(ctx context.Context, movieID int) ([]Showtime, error)
+	// Movie Schedule
+	AddMovieSchedule(ctx context.Context, movieSchedule MovieSchedule) error
+	UpdateMovieSchedule(ctx context.Context, id int, updateData MovieSchedule) error
+	GetAllMovieSchedules(ctx context.Context) ([]MovieSchedule, error)
+	GetMovieScheduleByMovieID(ctx context.Context, id int) ([]MovieSchedule, error)
+	GetMovieScheduleByTheaterID(ctx context.Context, id int) ([]MovieSchedule, error)
+	GetMovieScheduleByMovieIdAndTheaterId(ctx context.Context, movieId, theaterId int) ([]MovieSchedule, error)
+	GetMovieScheduleByMovieIdAndShowTimeId(ctx context.Context, movieId, showTimeId int) ([]MovieSchedule, error)
+	GetMovieScheduleByTheaterIdAndShowTimeId(ctx context.Context, theaterId, showTimeId int) ([]MovieSchedule, error)
+	GetMovieScheduleByID(ctx context.Context, id int) (*MovieSchedule, error)
+	DeleteMovieScheduleById(ctx context.Context, id int) error
+	DeleteMovieScheduleByMovieIdAndTheaterId(ctx context.Context, movieId, theaterId int) error
+	DeleteMovieScheduleByMovieIdAndTheaterIdAndShowTimeId(ctx context.Context, movieId, theaterId, showTimeId int) error
 }
 
 func NewService(repo Repository, notificationClient notificationClient.EmailServiceClient, authClient authClient.JWT_TokenServiceClient, movieBooking movie_booking.MovieServiceClient, theaterClient movie_booking.TheatreServiceClient) Service {
@@ -203,9 +216,13 @@ func (s *service) UpdateAdminProfile(ctx context.Context, id int, admin AdminPro
 
 func (s *service) ForgotPassword(ctx context.Context, email string) error {
 	user, err := s.repo.GetAdminByEmail(ctx, email)
-	if err != nil {
+	if err != nil && err != gorm.ErrRecordNotFound {
 		return err
 	}
+	if err == gorm.ErrRecordNotFound {
+		return fmt.Errorf("no admin found with this email id")
+	}
+
 	otp, err := utils.GenCaptchaCode()
 	if err != nil {
 		return err
@@ -228,8 +245,11 @@ func (s *service) ForgotPassword(ctx context.Context, email string) error {
 
 func (s *service) ResetPassword(ctx context.Context, data ResetPassword) error {
 	user, err := s.repo.GetAdminByEmail(ctx, data.Email)
-	if err != nil {
+	if err != nil && err != gorm.ErrRecordNotFound {
 		return err
+	}
+	if err == gorm.ErrRecordNotFound {
+		return fmt.Errorf("no admin found with this email id")
 	}
 
 	password := utils.HashPassword(data.NewPassword)
@@ -673,4 +693,207 @@ func (s *service) ListShowtimes(ctx context.Context, movieID int) ([]Showtime, e
 		showtimes = append(showtimes, showtime)
 	}
 	return showtimes, nil
+}
+
+// Movie Schedule
+func (s *service) AddMovieSchedule(ctx context.Context, movieSchedule MovieSchedule) error {
+	_, err := s.theaterClient.AddMovieSchedule(ctx, &movie_booking.AddMovieScheduleRequest{
+		MovieSchedule: &movie_booking.MovieSchedule{
+			MovieId:    int32(movieSchedule.MovieID),
+			TheaterId:  int32(movieSchedule.TheaterID),
+			ShowtimeId: int32(movieSchedule.ShowtimeID),
+		},
+	})
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (s *service) DeleteMovieScheduleById(ctx context.Context, id int) error {
+	_, err := s.theaterClient.DeleteMovieScheduleById(ctx, &movie_booking.DeleteMovieScheduleByIdRequest{
+		Id: int32(id),
+	})
+	if err != nil {
+		return err
+	}
+	return nil
+
+}
+
+func (s *service) DeleteMovieScheduleByMovieIdAndTheaterId(ctx context.Context, movieId int, theaterId int) error {
+	_, err := s.theaterClient.DeleteMovieScheduleByMovieIdAndTheaterId(ctx, &movie_booking.DeleteMovieScheduleByMovieIdAndTheaterIdRequest{
+		MovieId:   int32(movieId),
+		TheaterId: int32(theaterId),
+	})
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (s *service) DeleteMovieScheduleByMovieIdAndTheaterIdAndShowTimeId(ctx context.Context, movieId int, theaterId int, showTimeId int) error {
+	_, err := s.theaterClient.DeleteMovieScheduleByMovieIdAndTheaterIdAndShowTimeId(ctx, &movie_booking.DeleteMovieScheduleByMovieIdAndTheaterIdAndShowTimeIdRequest{
+		MovieId:    int32(movieId),
+		TheaterId:  int32(theaterId),
+		ShowtimeId: int32(showTimeId),
+	})
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (s *service) GetAllMovieSchedules(ctx context.Context) ([]MovieSchedule, error) {
+	response, err := s.theaterClient.GetAllMovieSchedules(ctx, &movie_booking.GetAllMovieScheduleRequest{})
+	if err != nil {
+		return nil, err
+	}
+	movieSchedules := []MovieSchedule{}
+
+	for _, res := range response.MovieSchedules {
+		movieSchedule := MovieSchedule{
+			ID:         uint(res.Id),
+			MovieID:    int(res.MovieId),
+			TheaterID:  int(res.TheaterId),
+			ShowtimeID: int(res.ShowtimeId),
+		}
+		movieSchedules = append(movieSchedules, movieSchedule)
+	}
+	return movieSchedules, nil
+}
+
+func (s *service) GetMovieScheduleByID(ctx context.Context, id int) (*MovieSchedule, error) {
+	response, err := s.theaterClient.GetMovieScheduleByID(ctx, &movie_booking.GetMovieScheduleByIDRequest{
+		Id: int32(id),
+	})
+
+	if err != nil {
+		return nil, err
+	}
+	return &MovieSchedule{
+		ID:         uint(response.MovieSchedule.Id),
+		MovieID:    int(response.MovieSchedule.MovieId),
+		TheaterID:  int(response.MovieSchedule.TheaterId),
+		ShowtimeID: int(response.MovieSchedule.ShowtimeId),
+	}, nil
+
+}
+
+func (s *service) GetMovieScheduleByMovieID(ctx context.Context, movieId int) ([]MovieSchedule, error) {
+	response, err := s.theaterClient.GetMovieScheduleByMovieID(ctx, &movie_booking.GetMovieScheduleByMovieIdRequest{
+		MovieId: int32(movieId),
+	})
+	if err != nil {
+		return nil, err
+	}
+	var movieSchedules []MovieSchedule
+	for _, res := range response.MovieSchedules {
+		movieSchedule := MovieSchedule{
+			ID:         uint(res.Id),
+			MovieID:    int(res.MovieId),
+			TheaterID:  int(res.TheaterId),
+			ShowtimeID: int(res.ShowtimeId),
+		}
+		movieSchedules = append(movieSchedules, movieSchedule)
+	}
+	return movieSchedules, nil
+}
+
+func (s *service) GetMovieScheduleByMovieIdAndShowTimeId(ctx context.Context, movieId int, showTimeId int) ([]MovieSchedule, error) {
+	response, err := s.theaterClient.GetMovieScheduleByMovieIdAndShowTimeId(ctx, &movie_booking.GetMovieScheduleByMovieIdAndShowTimeIdRequest{
+		MovieId:    int32(movieId),
+		ShowtimeId: int32(showTimeId),
+	})
+	if err != nil {
+		return nil, err
+	}
+	var movieSchedules []MovieSchedule
+	for _, res := range response.MovieSchedules {
+		movieSchedule := MovieSchedule{
+			ID:         uint(res.Id),
+			MovieID:    int(res.MovieId),
+			TheaterID:  int(res.TheaterId),
+			ShowtimeID: int(res.ShowtimeId),
+		}
+		movieSchedules = append(movieSchedules, movieSchedule)
+	}
+	return movieSchedules, nil
+}
+
+func (s *service) GetMovieScheduleByMovieIdAndTheaterId(ctx context.Context, movieId int, theaterId int) ([]MovieSchedule, error) {
+	response, err := s.theaterClient.GetMovieScheduleByMovieIdAndTheaterId(ctx, &movie_booking.GetMovieScheduleByMovieIdAndTheaterIdRequest{
+		MovieId:   int32(movieId),
+		TheaterId: int32(theaterId),
+	})
+	if err != nil {
+		return nil, err
+	}
+	var movieSchedules []MovieSchedule
+	for _, res := range response.MovieSchedules {
+		movieSchedule := MovieSchedule{
+			ID:         uint(res.Id),
+			MovieID:    int(res.MovieId),
+			TheaterID:  int(res.TheaterId),
+			ShowtimeID: int(res.ShowtimeId),
+		}
+		movieSchedules = append(movieSchedules, movieSchedule)
+	}
+	return movieSchedules, nil
+}
+
+func (s *service) GetMovieScheduleByTheaterID(ctx context.Context, theaterId int) ([]MovieSchedule, error) {
+	response, err := s.theaterClient.GetMovieScheduleByTheaterID(ctx, &movie_booking.GetMovieScheduleByTheaterIdRequest{
+		TheaterId: int32(theaterId),
+	})
+	if err != nil {
+		return nil, err
+	}
+	var movieSchedules []MovieSchedule
+	for _, res := range response.MovieSchedules {
+		movieSchedule := MovieSchedule{
+			ID:         uint(res.Id),
+			MovieID:    int(res.MovieId),
+			TheaterID:  int(res.TheaterId),
+			ShowtimeID: int(res.ShowtimeId),
+		}
+		movieSchedules = append(movieSchedules, movieSchedule)
+	}
+	return movieSchedules, nil
+}
+
+func (s *service) GetMovieScheduleByTheaterIdAndShowTimeId(ctx context.Context, theaterId int, showTimeId int) ([]MovieSchedule, error) {
+	response, err := s.theaterClient.GetMovieScheduleByTheaterIdAndShowTimeId(ctx, &movie_booking.GetGetMovieScheduleByTheaterIdAndShowTimeIdRequest{
+		TheaterId:  int32(theaterId),
+		ShowtimeId: int32(showTimeId),
+	})
+	if err != nil {
+		return nil, err
+	}
+	var movieSchedules []MovieSchedule
+	for _, res := range response.MovieSchedules {
+		movieSchedule := MovieSchedule{
+			ID:         uint(res.Id),
+			MovieID:    int(res.MovieId),
+			TheaterID:  int(res.TheaterId),
+			ShowtimeID: int(res.ShowtimeId),
+		}
+		movieSchedules = append(movieSchedules, movieSchedule)
+	}
+	return movieSchedules, nil
+}
+
+func (s *service) UpdateMovieSchedule(ctx context.Context, id int, updateData MovieSchedule) error {
+	_, err := s.theaterClient.UpdateMovieSchedule(ctx, &movie_booking.UpdateMovieScheduleRequest{
+		MovieSchedule: &movie_booking.MovieSchedule{
+			Id:         int32(id),
+			MovieId:    int32(updateData.MovieID),
+			TheaterId:  int32(updateData.TheaterID),
+			ShowtimeId: int32(updateData.ShowtimeID),
+		},
+	})
+	if err != nil {
+		return err
+	}
+	return nil
 }

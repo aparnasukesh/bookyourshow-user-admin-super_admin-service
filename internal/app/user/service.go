@@ -8,6 +8,7 @@ import (
 	authClient "github.com/aparnasukesh/inter-communication/auth"
 	notificationClient "github.com/aparnasukesh/inter-communication/notification"
 	"github.com/aparnasukesh/user-admin-super_admin-svc/internal/utils"
+	"gorm.io/gorm"
 )
 
 type service struct {
@@ -156,9 +157,13 @@ func (s *service) UpdateUserProfile(ctx context.Context, id int, user UserProfil
 
 func (s *service) ForgotPassword(ctx context.Context, email string) error {
 	user, err := s.repo.GetUserByEmail(ctx, email)
-	if err != nil {
+	if err != nil && err != gorm.ErrRecordNotFound {
 		return err
 	}
+	if err == gorm.ErrRecordNotFound {
+		return fmt.Errorf("no user found with this email id")
+	}
+
 	otp, err := utils.GenCaptchaCode()
 	if err != nil {
 		return err
@@ -181,8 +186,11 @@ func (s *service) ForgotPassword(ctx context.Context, email string) error {
 
 func (s *service) ResetPassword(ctx context.Context, data ResetPassword) error {
 	user, err := s.repo.GetUserByEmail(ctx, data.Email)
-	if err != nil {
+	if err != nil && err != gorm.ErrRecordNotFound {
 		return err
+	}
+	if err == gorm.ErrRecordNotFound {
+		return fmt.Errorf("no user found with this email id")
 	}
 
 	password := utils.HashPassword(data.NewPassword)
