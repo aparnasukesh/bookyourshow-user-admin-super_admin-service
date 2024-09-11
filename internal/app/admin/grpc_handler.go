@@ -18,6 +18,111 @@ func NewGrpcHandler(service Service) GrpcHandler {
 	}
 }
 
+// Seats
+func (h *GrpcHandler) CreateSeats(ctx context.Context, req *user_admin.CreateSeatsRequest) (*user_admin.CreateSeatsResponse, error) {
+	rowSeatCatetoryPrice := []RowSeatCategoryPrice{}
+	for _, res := range req.RowseatCategories {
+		rowSeats := RowSeatCategoryPrice{
+			RowStart:          res.RowStart,
+			RowEnd:            res.RowEnd,
+			SeatCategoryId:    int(res.SeatCategoryId),
+			SeatCategoryPrice: float32(res.SeatCategoryPrice),
+		}
+		rowSeatCatetoryPrice = append(rowSeatCatetoryPrice, rowSeats)
+	}
+	err := h.svc.CreateSeats(ctx, CreateSeatsRequest{
+		ScreenId:     int(req.ScreenId),
+		TotalRows:    int(req.TotalRows),
+		TotalColumns: int(req.TotalColumns),
+		SeatRequest:  rowSeatCatetoryPrice,
+	})
+	if err != nil {
+		return nil, err
+	}
+	return nil, nil
+}
+
+func (h *GrpcHandler) GetSeatsByScreenID(ctx context.Context, req *user_admin.GetSeatsByScreenIDRequest) (*user_admin.GetSeatsByScreenIDResponse, error) {
+	seats, err := h.svc.GetSeatsByScreenId(ctx, int(req.ScreenId))
+	if err != nil {
+		return nil, err
+	}
+
+	// Convert from service's Seat model to gRPC's Seat model
+	grpcSeats := []*user_admin.Seat{}
+	for _, seat := range seats {
+		grpcSeat := &user_admin.Seat{
+			Id:                int32(seat.ID),
+			ScreenId:          int32(seat.ScreenID),
+			SeatNumber:        seat.SeatNumber,
+			Row:               seat.Row,
+			Column:            int32(seat.Column),
+			SeatCategoryId:    int32(seat.SeatCategoryID),
+			SeatCategoryPrice: float64(seat.SeatCategoryPrice),
+		}
+		grpcSeats = append(grpcSeats, grpcSeat)
+	}
+
+	return &user_admin.GetSeatsByScreenIDResponse{Seats: grpcSeats}, nil
+}
+
+func (h *GrpcHandler) GetSeatByID(ctx context.Context, req *user_admin.GetSeatByIdRequest) (*user_admin.GetSeatByIdResponse, error) {
+	seat, err := h.svc.GetSeatById(ctx, int(req.Id))
+	if err != nil {
+		return nil, err
+	}
+
+	return &user_admin.GetSeatByIdResponse{
+		Seat: &user_admin.Seat{
+			Id:                int32(seat.ID),
+			ScreenId:          int32(seat.ScreenID),
+			SeatNumber:        seat.SeatNumber,
+			Row:               seat.Row,
+			Column:            int32(seat.Column),
+			SeatCategoryId:    int32(seat.SeatCategoryID),
+			SeatCategoryPrice: float64(seat.SeatCategoryPrice),
+		},
+	}, nil
+}
+
+func (h *GrpcHandler) GetSeatBySeatNumberAndScreenID(ctx context.Context, req *user_admin.GetSeatBySeatNumberAndScreenIdRequest) (*user_admin.GetSeatBySeatNumberAndScreenIdResponse, error) {
+	seat, err := h.svc.GetSeatBySeatNumberAndScreenId(ctx, int(req.ScreenId), req.SeatNumber)
+	if err != nil {
+		return nil, err
+	}
+
+	return &user_admin.GetSeatBySeatNumberAndScreenIdResponse{
+		Seat: &user_admin.Seat{
+			Id:                int32(seat.ID),
+			ScreenId:          int32(seat.ScreenID),
+			SeatNumber:        seat.SeatNumber,
+			Row:               seat.Row,
+			Column:            int32(seat.Column),
+			SeatCategoryId:    int32(seat.SeatCategoryID),
+			SeatCategoryPrice: float64(seat.SeatCategoryPrice),
+		},
+	}, nil
+}
+
+func (h *GrpcHandler) DeleteSeatByID(ctx context.Context, req *user_admin.DeleteSeatByIdRequest) (*user_admin.DeleteSeatByIdResponse, error) {
+	err := h.svc.DeleteSeatById(ctx, int(req.Id))
+	if err != nil {
+		return nil, err
+	}
+
+	return &user_admin.DeleteSeatByIdResponse{}, nil
+}
+
+func (h *GrpcHandler) DeleteSeatBySeatNumberAndScreenID(ctx context.Context, req *user_admin.DeleteSeatBySeatNumberAndScreenIDRequest) (*user_admin.DeleteSeatBySeatNumberAndScreenIDResponse, error) {
+	err := h.svc.DeleteSeatBySeatNumberAndScreenId(ctx, int(req.ScreenId), req.SeatNumber)
+	if err != nil {
+		return nil, err
+	}
+
+	return &user_admin.DeleteSeatBySeatNumberAndScreenIDResponse{}, nil
+}
+
+// Admin
 func (h *GrpcHandler) RegisterAdmin(ctx context.Context, req *user_admin.RegisterAdminRequest) (*user_admin.RegisterAdminResponse, error) {
 
 	userData := Admin{

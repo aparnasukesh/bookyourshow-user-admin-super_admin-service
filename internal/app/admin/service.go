@@ -74,6 +74,13 @@ type Service interface {
 	DeleteMovieScheduleById(ctx context.Context, id int) error
 	DeleteMovieScheduleByMovieIdAndTheaterId(ctx context.Context, movieId, theaterId int) error
 	DeleteMovieScheduleByMovieIdAndTheaterIdAndShowTimeId(ctx context.Context, movieId, theaterId, showTimeId int) error
+	// Seats
+	CreateSeats(ctx context.Context, req CreateSeatsRequest) error
+	GetSeatsByScreenId(ctx context.Context, screenId int) ([]Seat, error)
+	GetSeatById(ctx context.Context, id int) (*Seat, error)
+	GetSeatBySeatNumberAndScreenId(ctx context.Context, screenId int, seatNumber string) (*Seat, error)
+	DeleteSeatById(ctx context.Context, id int) error
+	DeleteSeatBySeatNumberAndScreenId(ctx context.Context, screenId int, seatNumber string) error
 }
 
 func NewService(repo Repository, notificationClient notificationClient.EmailServiceClient, authClient authClient.JWT_TokenServiceClient, movieBooking movie_booking.MovieServiceClient, theaterClient movie_booking.TheatreServiceClient) Service {
@@ -86,6 +93,110 @@ func NewService(repo Repository, notificationClient notificationClient.EmailServ
 	}
 }
 
+// Seats
+// Seats
+func (s *service) CreateSeats(ctx context.Context, req CreateSeatsRequest) error {
+	rowSeatCategoryPrice := []*movie_booking.RowAndSeatCategoryPrice{}
+	for _, row := range req.SeatRequest {
+		rowSeatPrice := movie_booking.RowAndSeatCategoryPrice{
+			RowStart:          row.RowStart,
+			RowEnd:            row.RowEnd,
+			SeatCategoryId:    int32(row.SeatCategoryId),
+			SeatCategoryPrice: float64(row.SeatCategoryPrice),
+		}
+		rowSeatCategoryPrice = append(rowSeatCategoryPrice, &rowSeatPrice)
+	}
+	_, err := s.theaterClient.CreateSeats(ctx, &movie_booking.CreateSeatsRequest{
+		ScreenId:          int32(req.ScreenId),
+		TotalRows:         int32(req.TotalRows),
+		TotalColumns:      int32(req.TotalColumns),
+		RowseatCategories: rowSeatCategoryPrice,
+	})
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (s *service) DeleteSeatById(ctx context.Context, id int) error {
+	_, err := s.theaterClient.DeleteSeatByID(ctx, &movie_booking.DeleteSeatByIdRequest{Id: int32(id)})
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (s *service) DeleteSeatBySeatNumberAndScreenId(ctx context.Context, screenId int, seatNumber string) error {
+	_, err := s.theaterClient.DeleteSeatBySeatNumberAndScreenID(ctx, &movie_booking.DeleteSeatBySeatNumberAndScreenIDRequest{
+		ScreenId:   int32(screenId),
+		SeatNumber: seatNumber,
+	})
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (s *service) GetSeatById(ctx context.Context, id int) (*Seat, error) {
+	resp, err := s.theaterClient.GetSeatByID(ctx, &movie_booking.GetSeatByIdRequest{Id: int32(id)})
+	if err != nil {
+		return nil, err
+	}
+	seat := &Seat{
+		ID:                int(resp.Seat.Id),
+		ScreenID:          int(resp.Seat.ScreenId),
+		SeatNumber:        resp.Seat.SeatNumber,
+		Row:               resp.Seat.Row,
+		Column:            int(resp.Seat.Column),
+		SeatCategoryID:    int(resp.Seat.SeatCategoryId),
+		SeatCategoryPrice: resp.Seat.SeatCategoryPrice,
+	}
+
+	return seat, nil
+}
+
+func (s *service) GetSeatBySeatNumberAndScreenId(ctx context.Context, screenId int, seatNumber string) (*Seat, error) {
+	resp, err := s.theaterClient.GetSeatBySeatNumberAndScreenID(ctx, &movie_booking.GetSeatBySeatNumberAndScreenIdRequest{
+		ScreenId:   int32(screenId),
+		SeatNumber: seatNumber,
+	})
+	if err != nil {
+		return nil, err
+	}
+	seat := &Seat{
+		ID:                int(resp.Seat.Id),
+		ScreenID:          int(resp.Seat.ScreenId),
+		SeatNumber:        resp.Seat.SeatNumber,
+		Row:               resp.Seat.Row,
+		Column:            int(resp.Seat.Column),
+		SeatCategoryID:    int(resp.Seat.SeatCategoryId),
+		SeatCategoryPrice: resp.Seat.SeatCategoryPrice,
+	}
+
+	return seat, nil
+}
+
+func (s *service) GetSeatsByScreenId(ctx context.Context, screenId int) ([]Seat, error) {
+	resp, err := s.theaterClient.GetSeatsByScreenID(ctx, &movie_booking.GetSeatsByScreenIDRequest{ScreenId: int32(screenId)})
+	if err != nil {
+		return nil, err
+	}
+	seats := make([]Seat, len(resp.Seats))
+	for i, seat := range resp.Seats {
+		seats[i] = Seat{
+			ID:                int(seat.Id),
+			ScreenID:          int(seat.ScreenId),
+			SeatNumber:        seat.SeatNumber,
+			Row:               seat.Row,
+			Column:            int(seat.Column),
+			SeatCategoryID:    int(seat.SeatCategoryId),
+			SeatCategoryPrice: seat.SeatCategoryPrice,
+		}
+	}
+	return seats, nil
+}
+
+// Admin
 func (s *service) RegisterAdmin(ctx context.Context, admin Admin) error {
 	existingAdmin, err := s.repo.GetAdminByEmail(ctx, admin.Email)
 	if err != nil {
