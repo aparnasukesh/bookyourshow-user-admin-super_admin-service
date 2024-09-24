@@ -48,7 +48,6 @@ func (h *GrpcHandler) GetSeatsByScreenID(ctx context.Context, req *user_admin.Ge
 		return nil, err
 	}
 
-	// Convert from service's Seat model to gRPC's Seat model
 	grpcSeats := []*user_admin.Seat{}
 	for _, seat := range seats {
 		grpcSeat := &user_admin.Seat{
