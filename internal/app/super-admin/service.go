@@ -206,7 +206,7 @@ func (s *service) DeleteMovie(ctx context.Context, movieId int) error {
 }
 
 func (s *service) GetMovieDetails(ctx context.Context, movieId int) (*Movie, error) {
-	response, err := s.movieBooking.GetMovieDetails(ctx, &movie_booking.GetMovieDetailsRequest{
+	response, err := s.movieBooking.GetMovieDetailsByID(ctx, &movie_booking.GetMovieDetailsRequest{
 		MovieId: uint32(movieId),
 	})
 	if err != nil {
