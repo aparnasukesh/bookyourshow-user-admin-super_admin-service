@@ -224,7 +224,6 @@ func (s *service) GetMovieDetails(ctx context.Context, movieId int) (*Movie, err
 		Rating:      float64(response.Movie.Rating),
 		Language:    response.Movie.Language,
 	}
-
 	return movie, nil
 }
 
