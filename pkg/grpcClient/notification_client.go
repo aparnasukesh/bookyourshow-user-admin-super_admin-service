@@ -1,13 +1,18 @@
 package grpcclient
 
 import (
+	"log"
+
 	pb "github.com/aparnasukesh/inter-communication/notification"
 	"google.golang.org/grpc"
 )
 
 func NewNotificationGrpcClint(port string) (pb.EmailServiceClient, error) {
-	conn, err := grpc.Dial("localhost:"+port, grpc.WithInsecure())
+	address := "notification-svc.default.svc.cluster.local:" + port
+	serviceConfig := `{"loadBalancingPolicy": "round_robin"}`
+	conn, err := grpc.Dial(address, grpc.WithInsecure(), grpc.WithDefaultServiceConfig(serviceConfig))
 	if err != nil {
+		log.Printf("Failed to connect to gRPC service: %v", err)
 		return nil, err
 	}
 	return pb.NewEmailServiceClient(conn), nil
