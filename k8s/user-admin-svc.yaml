@@ -1,0 +1,42 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: user-admin-svc
+  labels:
+    app: user-admin-svc
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: user-admin-svc
+  template:
+    metadata:
+      labels:
+        app: user-admin-svc
+    spec:
+      containers:
+        - name: user-admin-svc
+          image: aparnasukesh/user-admin-svc:latest
+          ports:
+            - containerPort: 5050
+          resources:
+            requests:
+              memory: "128Mi"
+              cpu: "250m"
+            limits:
+              memory: "256Mi"
+              cpu: "500m"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: user-admin-svc
+  labels:
+    app: user-admin-svc
+spec:
+  type: LoadBalancer
+  ports:
+    - port: 5050
+      targetPort: 5050
+  selector:
+    app: user-admin-svc
