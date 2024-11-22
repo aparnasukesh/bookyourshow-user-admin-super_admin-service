@@ -10,6 +10,7 @@ import (
 	superadmin "github.com/aparnasukesh/user-admin-super_admin-svc/internal/app/super-admin"
 	"github.com/aparnasukesh/user-admin-super_admin-svc/internal/app/user"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/reflection"
 )
 
 func NewGrpcServer(config config.Config, userGrpcHandler user.GrpcHandler, adminGrpcHandler admin.GrpcHandler, superAdminGrpcHandler superadmin.GrpcHandler) (func() error, error) {
@@ -21,7 +22,8 @@ func NewGrpcServer(config config.Config, userGrpcHandler user.GrpcHandler, admin
 	pb.RegisterUserServiceServer(s, &userGrpcHandler)
 	pb.RegisterAdminServiceServer(s, &adminGrpcHandler)
 	pb.RegisterSuperAdminServiceServer(s, &superAdminGrpcHandler)
-
+	// Assuming `server` is your gRPC server instance
+	reflection.Register(s)
 	srv := func() error {
 		log.Printf("gRPC server started on port %s", config.GrpcPort)
 		if err := s.Serve(lis); err != nil {
