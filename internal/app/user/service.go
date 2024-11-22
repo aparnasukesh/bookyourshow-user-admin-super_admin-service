@@ -53,7 +53,7 @@ func (s *service) RegisterUser(ctx context.Context, user User) error {
 		BodyMessage: "",
 	})
 	if err != nil {
-		return fmt.Errorf("failed to send email")
+		return fmt.Errorf("failed to send email", err)
 	}
 	if err := s.repo.CreateUser(ctx, user); err != nil {
 		return err
