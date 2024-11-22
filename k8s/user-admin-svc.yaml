@@ -34,9 +34,10 @@ metadata:
   labels:
     app: user-admin-svc
 spec:
-  type: LoadBalancer
+  type: ClusterIP # Change this to ClusterIP for internal communication
   ports:
     - port: 5050
       targetPort: 5050
   selector:
     app: user-admin-svc
+
