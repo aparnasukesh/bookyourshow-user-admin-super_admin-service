@@ -19,7 +19,7 @@ func InitResources(cfg config.Config) (func() error, error) {
 	if err != nil {
 		log.Fatal(err)
 	}
-	notificationClient, err := grpcClient.NewNotificationGrpcClint(cfg.GrpcNotificationPort)
+	notificationClient, err := grpcClient.NewNotificationGrpcClient(cfg.GrpcNotificationPort)
 	if err != nil {
 		return nil, err
 	}
