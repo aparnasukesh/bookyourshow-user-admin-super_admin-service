@@ -100,6 +100,26 @@ func (h *GrpcHandler) GetAdminByID(ctx context.Context, req *user_admin.GetAdmin
 		},
 	}, nil
 }
+
+// Movie
+func (h *GrpcHandler) RegisterMovie(ctx context.Context, req *user_admin.RegisterMovieRequest) (*user_admin.RegisterMovieResponse, error) {
+	movie_id, err := h.svc.RegisterMovie(ctx, Movie{
+		Title:       req.Title,
+		Description: req.Description,
+		Duration:    int(req.Duration),
+		Genre:       req.Genre,
+		ReleaseDate: req.ReleaseDate,
+		Rating:      float64(req.Rating),
+		Language:    req.Language,
+	})
+	if err != nil {
+		return nil, err
+	}
+	return &user_admin.RegisterMovieResponse{
+		MovieId: uint32(movie_id),
+		Message: "",
+	}, nil
+}
 func (h *GrpcHandler) DeleteMovie(ctx context.Context, req *user_admin.DeleteMovieRequest) (*user_admin.DeleteMovieResponse, error) {
 	err := h.svc.DeleteMovie(ctx, int(req.MovieId))
 	if err != nil {
