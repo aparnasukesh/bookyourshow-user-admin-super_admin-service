@@ -69,3 +69,8 @@ jobs:
       - name: Apply User Admin Service Kubernetes manifest
         run: |
           kubectl apply -f k8s/user-admin-svc.yaml
+
+      # Ensure deployment restarts to pick up new image
+      - name: Restart User Admin Service Deployment
+        run: |
+          kubectl rollout restart deployment user-admin-svc
