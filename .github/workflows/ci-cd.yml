@@ -146,7 +146,6 @@ jobs:
         run: |
           kubectl apply -f k8s/user-admin-svc.yaml -n bookyourshow
 
-      # Ensure deployment restarts to pick up new image
       - name: Restart User Admin Service Deployment (Namespace: bookyourshow)
         run: |
           kubectl rollout restart deployment user-admin-svc -n bookyourshow
