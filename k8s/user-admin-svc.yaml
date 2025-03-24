@@ -1,51 +1,7 @@
-# apiVersion: apps/v1
-# kind: Deployment
-# metadata:
-#   name: user-admin-svc
-#   labels:
-#     app: user-admin-svc
-# spec:
-#   replicas: 1
-#   selector:
-#     matchLabels:
-#       app: user-admin-svc
-#   template:
-#     metadata:
-#       labels:
-#         app: user-admin-svc
-#     spec:
-#       containers:
-#         - name: user-admin-svc
-#           image: aparnasukesh/user-admin-svc:latest
-#           ports:
-#             - containerPort: 5050
-#           resources:
-#             requests:
-#               memory: "64Mi"  # Reduced from 128Mi
-#               cpu: "100m"     # Reduced from 250m
-#             limits:
-#               memory: "128Mi" # Reduced from 256Mi
-#               cpu: "250m"     # Reduced from 500m
-# ---
-# apiVersion: v1
-# kind: Service
-# metadata:
-#   name: user-admin-svc
-#   labels:
-#     app: user-admin-svc
-# spec:
-#   type: ClusterIP # Change this to ClusterIP for internal communication
-#   ports:
-#     - port: 5050
-#       targetPort: 5050
-#   selector:
-#     app: user-admin-svc
-
 apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: user-admin-svc
-  namespace: bookyourshow
   labels:
     app: user-admin-svc
 spec:
@@ -65,21 +21,20 @@ spec:
             - containerPort: 5050
           resources:
             requests:
-              memory: "64Mi"
-              cpu: "100m"
+              memory: "64Mi"  # Reduced from 128Mi
+              cpu: "100m"     # Reduced from 250m
             limits:
-              memory: "128Mi"
-              cpu: "250m"
+              memory: "128Mi" # Reduced from 256Mi
+              cpu: "250m"     # Reduced from 500m
 ---
 apiVersion: v1
 kind: Service
 metadata:
   name: user-admin-svc
-  namespace: bookyourshow
   labels:
     app: user-admin-svc
 spec:
-  type: ClusterIP
+  type: ClusterIP # Change this to ClusterIP for internal communication
   ports:
     - port: 5050
       targetPort: 5050

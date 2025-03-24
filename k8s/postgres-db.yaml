@@ -1,57 +1,7 @@
-# apiVersion: apps/v1
-# kind: Deployment
-# metadata:
-#   name: postgres-db
-#   labels:
-#     app: postgres-db
-# spec:
-#   replicas: 1
-#   selector:
-#     matchLabels:
-#       app: postgres-db
-#   template:
-#     metadata:
-#       labels:
-#         app: postgres-db
-#     spec:
-#       containers:
-#         - name: postgres-db
-#           image: postgres:latest
-#           ports:
-#             - containerPort: 5432
-#           env:
-#             - name: POSTGRES_DB
-#               value: "book_your_show_user_admin"
-#             - name: POSTGRES_USER
-#               value: "postgres"
-#             - name: POSTGRES_PASSWORD
-#               value: "2585"
-#           resources:
-#             requests:
-#               memory: "128Mi"  # Reduced from 256Mi
-#               cpu: "250m"      # Reduced from 500m
-#             limits:
-#               memory: "256Mi"  # Reduced from 512Mi
-#               cpu: "500m"      
-# ---
-# apiVersion: v1
-# kind: Service
-# metadata:
-#   name: postgres-db
-#   labels:
-#     app: postgres-db
-# spec:
-#   ports:
-#     - port: 5432
-#       targetPort: 5432
-#   selector:
-#     app: postgres-db
-
 apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: postgres-db
-  namespace: bookyourshow
   labels:
     app: postgres-db
 spec:
@@ -78,17 +28,16 @@ spec:
               value: "2585"
           resources:
             requests:
-              memory: "128Mi"
-              cpu: "250m"
+              memory: "128Mi"  # Reduced from 256Mi
+              cpu: "250m"      # Reduced from 500m
             limits:
-              memory: "256Mi"
-              cpu: "500m"
+              memory: "256Mi"  # Reduced from 512Mi
+              cpu: "500m"      
 ---
 apiVersion: v1
 kind: Service
 metadata:
   name: postgres-db
-  namespace: bookyourshow
   labels:
     app: postgres-db
 spec:
