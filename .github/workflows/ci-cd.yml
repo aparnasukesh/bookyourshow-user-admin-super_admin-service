@@ -138,14 +138,14 @@ jobs:
       - name: Debug - List Root Directory
         run: ls -R .
 
-      - name: Apply Postgres Kubernetes manifest (Namespace: bookyourshow)
+      - name: Apply Postgres Kubernetes manifest 
         run: |
           kubectl apply -f k8s/postgres-db.yaml -n bookyourshow
 
-      - name: Apply User Admin Service Kubernetes manifest (Namespace: bookyourshow)
+      - name: Apply User Admin Service Kubernetes manifest 
         run: |
           kubectl apply -f k8s/user-admin-svc.yaml -n bookyourshow
 
-      - name: Restart User Admin Service Deployment (Namespace: bookyourshow)
+      - name: Restart User Admin Service Deployment 
         run: |
           kubectl rollout restart deployment user-admin-svc -n bookyourshow
